@@ -4,6 +4,7 @@ namespace steroids\billing\models;
 
 use steroids\billing\BillingModule;
 use steroids\billing\models\meta\BillingCurrencyMeta;
+use yii\db\ActiveRecord;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
@@ -13,6 +14,26 @@ class BillingCurrency extends BillingCurrencyMeta
     public static function instantiate($row)
     {
         return BillingModule::instantiateClass(static::class, $row);
+    }
+
+    public static function asEnum($condition = [], $additionalFields = [], $onlyVisible = true)
+    {
+        $additionalFields = array_merge($additionalFields, [
+            'code',
+            'precision',
+            'rateUsd',
+            'ratePrecision',
+        ]);
+        return parent::asEnum($condition, $additionalFields, $onlyVisible);
+    }
+
+    /**
+     * @param $code
+     * @return BillingCurrency|ActiveRecord|null
+     */
+    public static function getByCode($code)
+    {
+        return static::find()->where(['code' => $code])->limit(1)->one() ?: null;
     }
 
     /**
@@ -29,7 +50,7 @@ class BillingCurrency extends BillingCurrencyMeta
 
         $currencies = static::findAll(['code' => array_keys($rates)]);
         foreach ($currencies as $currency) {
-            $value = round(floatval($rates[$currency->code]) * pow(10, $currency->ratePrecision));
+            $value = $currency->amountToInt($rates[$currency->code]);
 
             // Validate changes percent
             if (!$skipValidation && $currency->rateUsd) {
@@ -51,5 +72,10 @@ class BillingCurrency extends BillingCurrencyMeta
         }
 
         return $bool;
+    }
+
+    public function amountToInt($value)
+    {
+        return round(floatval($value) * pow(10, $this->ratePrecision));
     }
 }

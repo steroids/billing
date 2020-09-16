@@ -22,7 +22,7 @@ class M000000200000Billing extends Migration
             'label' => $this->string(),
             'rateUsd' => $this->bigInteger(),
             'ratePrecision' => $this->integer()->notNull(),
-            'isVisible' => $this->boolean()->notNull()->defaultValue(0),
+            'isVisible' => $this->boolean()->notNull()->defaultValue(false),
             'createTime' => $this->dateTime(),
             'updateTime' => $this->dateTime(),
         ]);

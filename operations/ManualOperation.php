@@ -1,20 +1,29 @@
 <?php
 
-namespace app\billing\operations;
+namespace steroids\billing\operations;
 
+use steroids\billing\models\BillingManualDocument;
+
+/**
+ * Class ManualOperation
+ * @property-read BillingManualDocument $document
+ */
 class ManualOperation extends BaseOperation
 {
     public int $amount;
 
-    public string $comment;
-
     public function getDelta()
     {
-        return (float)$this->amount;
+        return (int)$this->amount;
     }
 
     public function getTitle()
     {
-        return $this->comment;
+        return $this->document->comment;
+    }
+
+    public static function getDocumentClass()
+    {
+        return BillingManualDocument::class;
     }
 }

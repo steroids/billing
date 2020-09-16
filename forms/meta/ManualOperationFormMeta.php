@@ -2,56 +2,56 @@
 
 namespace steroids\billing\forms\meta;
 
-use steroids\billing\enums\ManualOperationEnum;
 use steroids\core\base\FormModel;
 use \Yii;
 
 abstract class ManualOperationFormMeta extends FormModel
 {
-    public $operationName;
-    public $currencyCode;
-    public $amount;
-    public $accountId;
-    public $comment;
+    public ?int $fromAccountId = null;
+    public ?int $toUserId = null;
+    public ?string $toAccountName = null;
+    public ?float $amount = null;
+    public ?string $comment = null;
 
     public function rules()
     {
         return [
-            ['operationName', 'in', 'range' => ManualOperationEnum::getKeys()],
-            [['operationName', 'currencyCode', 'amount', 'accountId'], 'required'],
-            ['currencyCode', 'string', 'max' => 255],
+            ...parent::rules(),
+            [['fromAccountId', 'toUserId', 'toAccountName', 'amount'], 'required'],
+            [['fromAccountId', 'toUserId'], 'integer'],
             ['amount', 'number'],
-            ['accountId', 'integer'],
-            ['comment', 'string'],
+            [['toAccountName', 'comment'], 'string'],
         ];
     }
 
     public static function meta()
     {
         return [
-            'operationName' => [
-                'label' => Yii::t('app', 'Операция'),
-                'appType' => 'enum',
-                'isRequired' => true,
-                'enumClassName' => ManualOperationEnum::class
-            ],
-            'currencyCode' => [
-                'label' => Yii::t('app', 'Валюта'),
-                'isRequired' => true
-            ],
-            'amount' => [
-                'label' => Yii::t('app', 'Количество'),
-                'appType' => 'double',
-                'isRequired' => true
-            ],
-            'accountId' => [
-                'label' => Yii::t('app', 'Аккаунт'),
+            'fromAccountId' => [
+                'label' => Yii::t('steroids', 'Системный аккаунт'),
                 'appType' => 'integer',
                 'isRequired' => true
             ],
+            'toUserId' => [
+                'label' => Yii::t('steroids', 'Пользователь'),
+                'appType' => 'integer',
+                'isRequired' => true
+            ],
+            'toAccountName' => [
+                'label' => Yii::t('steroids', 'Аккаунт'),
+                'appType' => 'string',
+                'isRequired' => true
+            ],
+            'amount' => [
+                'label' => Yii::t('steroids', 'Сумма'),
+                'appType' => 'double',
+                'isRequired' => true,
+                'scale' => '2'
+            ],
             'comment' => [
-                'label' => Yii::t('app', 'Комментарий'),
-                'appType' => 'text'
+                'label' => Yii::t('steroids', 'Комментарий'),
+                'appType' => 'text',
+                'isSortable' => false
             ]
         ];
     }

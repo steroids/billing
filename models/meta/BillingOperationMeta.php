@@ -5,6 +5,9 @@ namespace steroids\billing\models\meta;
 use steroids\core\base\Model;
 use steroids\core\behaviors\TimestampBehavior;
 use \Yii;
+use yii\db\ActiveQuery;
+use steroids\billing\models\BillingAccount;
+use steroids\billing\models\BillingCurrency;
 
 /**
  * @property string $id
@@ -15,6 +18,9 @@ use \Yii;
  * @property integer $documentId
  * @property integer $delta
  * @property string $createTime
+ * @property-read BillingAccount $fromAccount
+ * @property-read BillingAccount $toAccount
+ * @property-read BillingCurrency $currency
  */
 abstract class BillingOperationMeta extends Model
 {
@@ -52,6 +58,30 @@ abstract class BillingOperationMeta extends Model
             ...parent::behaviors(),
             TimestampBehavior::class,
         ];
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getFromAccount()
+    {
+        return $this->hasOne(BillingAccount::class, ['id' => 'fromAccountId']);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getToAccount()
+    {
+        return $this->hasOne(BillingAccount::class, ['id' => 'toAccountId']);
+    }
+
+    /**
+     * @return ActiveQuery
+     */
+    public function getCurrency()
+    {
+        return $this->hasOne(BillingCurrency::class, ['id' => 'currencyId']);
     }
 
     public static function meta()

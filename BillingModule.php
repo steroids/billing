@@ -2,9 +2,8 @@
 
 namespace steroids\billing;
 
-use app\billing\operations\BaseOperation;
-use app\billing\operations\ChargeOperation;
-use app\billing\operations\ManualOperation;
+use steroids\billing\operations\BaseOperation;
+use steroids\billing\operations\ManualOperation;
 use steroids\billing\models\BillingAccount;
 use steroids\billing\models\BillingCurrency;
 use steroids\billing\models\BillingOperation;
@@ -16,8 +15,9 @@ use yii\helpers\ArrayHelper;
 
 class BillingModule extends Module
 {
-    const OPERATION_CHARGE = 'charge';
     const OPERATION_MANUAL = 'manual';
+
+    const EVENT_OPERATION_EXECUTE = 'operation_execute';
 
     /**
      * @var array|string
@@ -42,7 +42,6 @@ class BillingModule extends Module
      * @var array
      */
     public array $operationsMap = [
-        self::OPERATION_CHARGE => ChargeOperation::class,
         self::OPERATION_MANUAL => ManualOperation::class,
     ];
 
@@ -141,6 +140,23 @@ class BillingModule extends Module
     public function getOperationClass(string $name)
     {
         return ArrayHelper::getValue($this->operationsMap, $name);
+    }
+
+    /**
+     * @param string $className
+     * @return int|string
+     * @throws InvalidConfigException
+     * @throws \yii\base\Exception
+     */
+    public function getOperationName(string $className)
+    {
+        foreach (BillingModule::getInstance()->operationsMap as $name => $cn) {
+            if (trim($className, '\\') === trim($cn, '\\')) {
+                return $name;
+            }
+        }
+
+        throw new InvalidConfigException('Not fount operation name by class: ' . static::class);
     }
 
     /**

@@ -2,67 +2,61 @@
 
 namespace steroids\billing\forms;
 
-use steroids\account\models\Account;
-use steroids\billing\enums\ManualOperationEnum;
+use steroids\billing\BillingModule;
 use steroids\billing\exceptions\InsufficientFundsException;
 use steroids\billing\forms\meta\ManualOperationFormMeta;
-use steroids\billing\models\BillingWallet;
+use steroids\billing\models\BillingAccount;
+use steroids\billing\models\BillingManualDocument;
+use steroids\billing\models\BillingOperation;
+use steroids\billing\operations\BaseOperation;
+use steroids\billing\operations\ManualOperation;
 
 /**
  * Class ManualOperationForm
- * @property-read BillingWallet $wallet
+ * @package steroids\billing\forms
  */
 class ManualOperationForm extends ManualOperationFormMeta
 {
-    public function rules()
-    {
-        return array_merge(parent::rules(), [
-            ['comment', 'required', 'when' => function () {
-                return $this->operationName === ManualOperationEnum::ANY;
-            }],
-        ]);
-    }
+    public ?int $userId = null;
+    public ?string $ipAddress = null;
+
+    public ?BillingOperation $operation;
 
     /**
-     * @return bool
-     * @throws \app\billing\exceptions\BillingException
+     * @throws \steroids\core\exceptions\ModelSaveException
+     * @throws \yii\base\Exception
+     * @throws \yii\web\NotFoundHttpException
      */
-    public function charge()
+    public function execute()
     {
         if ($this->validate()) {
-            $operation = $this->wallet->createOperation(ManualOperationEnum::getOperationClass($this->operationName), [
-                'amount' => $this->amount,
-                'comment' => $this->comment,
+            // Get accounts
+            /** @var BillingAccount $accountClass */
+            $accountClass = BillingModule::resolveClass(BillingAccount::class);
+            $fromAccount = $accountClass::findOrPanic(['id' => $this->fromAccountId]);
+            $toAccount = $accountClass::findOrCreate($this->toAccountName, $fromAccount->currencyId, $this->toUserId);
+
+            // Create operation
+            /** @var BaseOperation $operation */
+            $operation = $fromAccount->createOperation($toAccount, ManualOperation::class, [
+                'amount' => $fromAccount->currency->amountToInt($this->amount),
+                'document' => [
+                    'userId' => $this->userId,
+                    'ipAddress' => $this->ipAddress,
+                    'comment' => $this->comment,
+                ],
             ]);
 
+            // Execute operation
             try {
                 $operation->execute();
-                return true;
             } catch (InsufficientFundsException $e) {
                 $this->addError('amount', \Yii::t('app', 'На балансе недостаточно средств: {amount}', [
                     'amount' => $e->balance,
                 ]));
             }
 
+            $this->operation = $operation->model;
         }
-        return false;
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getAccount()
-    {
-        return $this->hasOne(Account::class, ['id' => 'accountId']);
-    }
-
-    /**
-     * @return \app\billing\models\BillingWallet
-     * @throws \steroids\exceptions\ModelSaveException
-     */
-    public function getWallet()
-    {
-        return $this->account->getWallet($this->currencyCode);
-
     }
 }
