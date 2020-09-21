@@ -7,29 +7,36 @@ use \Yii;
 
 abstract class ManualOperationFormMeta extends FormModel
 {
-    public ?int $fromAccountId = null;
+    public ?string $currencyCode = null;
+    public ?string $fromAccountName = null;
     public ?int $toUserId = null;
     public ?string $toAccountName = null;
     public ?float $amount = null;
     public ?string $comment = null;
 
+
     public function rules()
     {
         return [
             ...parent::rules(),
-            [['fromAccountId', 'toUserId', 'toAccountName', 'amount'], 'required'],
-            [['fromAccountId', 'toUserId'], 'integer'],
+            [['currencyCode', 'fromAccountName', 'toAccountName'], 'string', 'max' => 255],
+            [['currencyCode', 'fromAccountName', 'toUserId', 'toAccountName', 'amount'], 'required'],
+            ['toUserId', 'integer'],
             ['amount', 'number'],
-            [['toAccountName', 'comment'], 'string'],
+            ['comment', 'string'],
         ];
     }
 
     public static function meta()
     {
         return [
-            'fromAccountId' => [
+            'currencyCode' => [
+                'label' => Yii::t('steroids', 'Валюта'),
+                'isRequired' => true,
+                'isSortable' => false
+            ],
+            'fromAccountName' => [
                 'label' => Yii::t('steroids', 'Системный аккаунт'),
-                'appType' => 'integer',
                 'isRequired' => true
             ],
             'toUserId' => [
@@ -39,7 +46,6 @@ abstract class ManualOperationFormMeta extends FormModel
             ],
             'toAccountName' => [
                 'label' => Yii::t('steroids', 'Аккаунт'),
-                'appType' => 'string',
                 'isRequired' => true
             ],
             'amount' => [

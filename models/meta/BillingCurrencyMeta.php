@@ -27,25 +27,34 @@ abstract class BillingCurrencyMeta extends Model
     public function fields()
     {
         return [
+            'id',
+            'code',
+            'precision',
+            'label',
+            'rateUsd',
+            'ratePrecision',
+            'isVisible',
         ];
     }
 
     public function rules()
     {
-        return array_merge(parent::rules(), [
+        return [
+            ...parent::rules(),
             ['code', 'string', 'max' => '32'],
             [['code', 'precision'], 'required'],
             [['precision', 'rateUsd', 'ratePrecision'], 'integer'],
             ['label', 'string', 'max' => 255],
             ['isVisible', 'steroids\\core\\validators\\ExtBooleanValidator'],
-        ]);
+        ];
     }
 
     public function behaviors()
     {
-        return array_merge(parent::behaviors(), [
+        return [
+            ...parent::behaviors(),
             TimestampBehavior::class,
-        ]);
+        ];
     }
 
     public static function meta()
@@ -55,13 +64,13 @@ abstract class BillingCurrencyMeta extends Model
                 'label' => Yii::t('steroids', 'ID'),
                 'example' => '1',
                 'appType' => 'primaryKey',
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'code' => [
                 'label' => Yii::t('steroids', 'Код'),
                 'example' => 'usd',
                 'isRequired' => true,
-                'isPublishToFrontend' => false,
+                'isPublishToFrontend' => true,
                 'stringLength' => '32'
             ],
             'precision' => [
@@ -70,31 +79,31 @@ abstract class BillingCurrencyMeta extends Model
                 'example' => '2',
                 'appType' => 'integer',
                 'isRequired' => true,
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'label' => [
                 'label' => Yii::t('steroids', 'Название'),
                 'example' => 'Доллар',
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'rateUsd' => [
                 'label' => Yii::t('steroids', 'Курс к доллару'),
                 'example' => '7051',
                 'appType' => 'integer',
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'ratePrecision' => [
                 'label' => Yii::t('steroids', 'Точность курса'),
                 'hint' => Yii::t('steroids', 'Количество знаков после запятой'),
                 'example' => '2',
                 'appType' => 'integer',
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'isVisible' => [
                 'label' => Yii::t('steroids', 'Отображать на сайте?'),
                 'example' => true,
                 'appType' => 'boolean',
-                'isPublishToFrontend' => false
+                'isPublishToFrontend' => true
             ],
             'createTime' => [
                 'label' => Yii::t('steroids', 'Дата создания'),

@@ -45,6 +45,7 @@ class BillingOperation extends BillingOperationMeta
                 'fromAccountId' => $this->fromAccountId,
                 'toAccountId' => $this->toAccountId,
                 'documentId' => $this->documentId,
+                'model' => $this,
             ];
             if ($this->isRelationPopulated('fromAccount')) {
                 $params['fromAccount'] = $this->fromAccount;

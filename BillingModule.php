@@ -2,6 +2,7 @@
 
 namespace steroids\billing;
 
+use steroids\billing\exceptions\BillingException;
 use steroids\billing\operations\BaseOperation;
 use steroids\billing\operations\ManualOperation;
 use steroids\billing\models\BillingAccount;
@@ -46,6 +47,7 @@ class BillingModule extends Module
     ];
 
     /**
+     * @example [['class' => 'steroids\billing\rates\EuropeanCentralBankRate']]
      * @var array|BaseRate[]
      */
     public array $rates = [];
@@ -78,6 +80,10 @@ class BillingModule extends Module
     public static function fetchRates(array $names = null, bool $skipValidation = false)
     {
         $module = static::getInstance();
+        if (empty($module->rates)) {
+            throw new InvalidConfigException('Rates providers is not configured! See BillingModule::rates property.');
+        }
+
         foreach ($module->rates as $name => $rate) {
             // Filter by names
             if ($names && !in_array($name, $names)) {

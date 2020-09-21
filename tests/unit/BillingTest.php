@@ -34,7 +34,8 @@ class BillingTest extends TestCase
         // Charge
         $comment = 'test' . microtime(true);
         $manualForm = new ManualOperationForm([
-            'fromAccountId' => $fromAccount->primaryKey,
+            'fromAccountName' => $fromAccount->name,
+            'currencyId' => $fromAccount->currencyId,
             'toUserId' => $user->primaryKey,
             'toAccountName' => UserAccountName::MAIN,
             'amount' => 100,

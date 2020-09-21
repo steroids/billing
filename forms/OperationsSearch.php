@@ -19,8 +19,13 @@ class OperationsSearch extends OperationsSearchMeta
         return [
             'id',
             'name',
-            'title',
-            'currencyId',
+            'title' => 'operation.title',
+            'currency' => [
+                'id',
+                'code',
+                'label',
+                'precision',
+            ],
             'fromAccount' => [
                 'id',
                 'name',
@@ -40,8 +45,13 @@ class OperationsSearch extends OperationsSearchMeta
     public function prepare($query)
     {
         $query
-            ->joinWith('fromAccount.user')
-            ->joinWith('toAccount.user')
+            ->with('currency')
+            ->joinWith([
+                'fromAccount fa',
+                'fromAccount.user fau',
+                'toAccount ta',
+                'toAccount.user tau',
+            ])
             ->andFilterWhere([
                 'name' => $this->operationName,
                 'currencyId' => $this->currencyId,
@@ -52,20 +62,28 @@ class OperationsSearch extends OperationsSearchMeta
             ->addOrderBy(['id' => SORT_DESC]);
 
         // Users search
+        $likeConditions = [];
         if ($this->fromUserQuery || $this->toUserQuery) {
             foreach (AuthModule::getInstance()->loginAvailableAttributes as $attributeType) {
                 $attribute = AuthModule::getInstance()->getUserAttributeName($attributeType);
-                $query->andFilterWhere(['like', 'fromAccount.user.' . $attribute, $this->fromUserQuery]);
-                $query->andFilterWhere(['like', 'toAccount.user.' . $attribute, $this->toUserQuery]);
+                if ($this->fromUserQuery) {
+                    $likeConditions[] = ['like', 'fau.' . $attribute, $this->fromUserQuery];
+                }
+                if ($this->toUserQuery) {
+                    $likeConditions[] = ['like', 'tau.' . $attribute, $this->toUserQuery];
+                }
             }
+        }
+        if (count($likeConditions) > 0) {
+            $query->andWhere(['or', ...$likeConditions]);
         }
 
         // Context user query
         if ($this->user) {
             $query->andWhere([
                 'or',
-                ['fromAccount.user.id' => $this->user->primaryKey],
-                ['toAccount.user.id' => $this->user->primaryKey],
+                ['fau.id' => $this->user->primaryKey],
+                ['tau.id' => $this->user->primaryKey],
             ]);
         }
     }

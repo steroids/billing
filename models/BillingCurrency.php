@@ -3,6 +3,7 @@
 namespace steroids\billing\models;
 
 use steroids\billing\BillingModule;
+use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
 use yii\db\ActiveRecord;
 
@@ -29,11 +30,15 @@ class BillingCurrency extends BillingCurrencyMeta
 
     /**
      * @param $code
-     * @return BillingCurrency|ActiveRecord|null
+     * @return BillingCurrency|ActiveRecord
      */
     public static function getByCode($code)
     {
-        return static::find()->where(['code' => $code])->limit(1)->one() ?: null;
+        $currency = static::find()->where(['code' => $code])->limit(1)->one();
+        if (!$currency) {
+            throw new BillingException('Not found currency by code: ' . $code);
+        }
+        return $currency;
     }
 
     /**

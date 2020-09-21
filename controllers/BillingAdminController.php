@@ -2,8 +2,11 @@
 
 namespace steroids\billing\controllers;
 
+use steroids\billing\BillingModule;
 use steroids\billing\forms\ManualOperationForm;
 use steroids\billing\forms\OperationsSearch;
+use steroids\billing\models\BillingCurrency;
+use steroids\core\base\SearchModel;
 use yii\web\Controller;
 
 class BillingAdminController extends Controller
@@ -13,11 +16,50 @@ class BillingAdminController extends Controller
         return [
             'admin.billing' => [
                 'items' => [
+                    'get-currencies' => "GET $baseUrl/currencies",
+                    'get-currency' => "GET $baseUrl/currencies/<id>",
+                    'update-currency' => "POST $baseUrl/currencies/<id>",
                     'get-operations' => "GET $baseUrl/operations",
                     'create-manual' => "POST $baseUrl/operations",
                 ],
             ],
         ];
+    }
+
+    /**
+     * @return SearchModel
+     * @throws \yii\base\Exception
+     */
+    public function actionGetCurrencies()
+    {
+        $model = new SearchModel();
+        $model->model = BillingModule::resolveClass(BillingCurrency::class);
+        $model->user = false;
+        $model->search(\Yii::$app->request->get());
+        return $model;
+    }
+
+    /**
+     * @param $id
+     * @return BillingCurrency|null
+     * @throws \yii\web\NotFoundHttpException
+     */
+    public function actionGetCurrency($id)
+    {
+        return BillingCurrency::findOrPanic(['id' => $id]);
+    }
+
+    /**
+     * @param $id
+     * @return BillingCurrency|null
+     * @throws \yii\web\NotFoundHttpException
+     */
+    public function actionUpdateCurrency($id)
+    {
+        $currency = BillingCurrency::findOrPanic(['id' => $id]);
+        $currency->load(\Yii::$app->request->post());
+        $currency->save();
+        return $currency;
     }
 
     /**

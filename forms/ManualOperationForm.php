@@ -6,6 +6,7 @@ use steroids\billing\BillingModule;
 use steroids\billing\exceptions\InsufficientFundsException;
 use steroids\billing\forms\meta\ManualOperationFormMeta;
 use steroids\billing\models\BillingAccount;
+use steroids\billing\models\BillingCurrency;
 use steroids\billing\models\BillingManualDocument;
 use steroids\billing\models\BillingOperation;
 use steroids\billing\operations\BaseOperation;
@@ -33,13 +34,14 @@ class ManualOperationForm extends ManualOperationFormMeta
             // Get accounts
             /** @var BillingAccount $accountClass */
             $accountClass = BillingModule::resolveClass(BillingAccount::class);
-            $fromAccount = $accountClass::findOrPanic(['id' => $this->fromAccountId]);
-            $toAccount = $accountClass::findOrCreate($this->toAccountName, $fromAccount->currencyId, $this->toUserId);
+            $currency = BillingCurrency::getByCode($this->currencyCode);
+            $fromAccount = $accountClass::findOrPanic(['name' => $this->fromAccountName, 'currencyId' => $currency->primaryKey]);
+            $toAccount = $accountClass::findOrCreate($this->toAccountName, $currency->primaryKey, $this->toUserId);
 
             // Create operation
             /** @var BaseOperation $operation */
             $operation = $fromAccount->createOperation($toAccount, ManualOperation::class, [
-                'amount' => $fromAccount->currency->amountToInt($this->amount),
+                'amount' => $currency->amountToInt($this->amount),
                 'document' => [
                     'userId' => $this->userId,
                     'ipAddress' => $this->ipAddress,

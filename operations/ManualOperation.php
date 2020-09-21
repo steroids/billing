@@ -19,7 +19,12 @@ class ManualOperation extends BaseOperation
 
     public function getTitle()
     {
-        return $this->document->comment;
+        if ($this->document->comment) {
+            return $this->document->comment;
+        }
+        return $this->getModel()->delta > 0
+            ? \Yii::t('app', 'Ручное пополнение')
+            : \Yii::t('app', 'Ручное списание');
     }
 
     public static function getDocumentClass()
