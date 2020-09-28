@@ -20,7 +20,6 @@ use steroids\billing\models\BillingCurrency;
  * @property string $createTime
  * @property-read BillingAccount $fromAccount
  * @property-read BillingAccount $toAccount
- * @property-read BillingCurrency $currency
  */
 abstract class BillingOperationMeta extends Model
 {
@@ -74,14 +73,6 @@ abstract class BillingOperationMeta extends Model
     public function getToAccount()
     {
         return $this->hasOne(BillingAccount::class, ['id' => 'toAccountId']);
-    }
-
-    /**
-     * @return ActiveQuery
-     */
-    public function getCurrency()
-    {
-        return $this->hasOne(BillingCurrency::class, ['id' => 'currencyId']);
     }
 
     public static function meta()

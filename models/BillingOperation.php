@@ -11,6 +11,7 @@ use steroids\billing\operations\BaseOperation;
  * @package steroids\billing\models
  * @property-read string $title
  * @property-read BaseOperation $operation
+ * @property-read BillingCurrency $currency
  */
 class BillingOperation extends BillingOperationMeta
 {
@@ -58,5 +59,14 @@ class BillingOperation extends BillingOperationMeta
         }
 
         return $this->_operation;
+    }
+
+    /**
+     * @return BillingCurrency
+     * @throws \steroids\billing\exceptions\BillingException
+     */
+    public function getCurrency()
+    {
+        return BillingCurrency::getById($this->currencyId);
     }
 }

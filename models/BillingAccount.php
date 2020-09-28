@@ -15,6 +15,7 @@ use yii\db\ActiveQuery;
  * Class BillingAccount
  * @package steroids\billing\models
  * @property-read UserInterface|Model $user
+ * @property-read BillingCurrency $currency
  */
 class BillingAccount extends BillingAccountMeta
 {
@@ -115,5 +116,13 @@ class BillingAccount extends BillingAccountMeta
     public function getUser()
     {
         return $this->hasOne(AuthModule::getInstance()->userClass, ['id' => 'userId']);
+    }
+
+    /**
+     * @return BillingCurrency
+     */
+    public function getCurrency()
+    {
+        return BillingCurrency::getById($this->currencyId);
     }
 }

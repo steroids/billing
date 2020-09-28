@@ -9,6 +9,9 @@ use yii\db\ActiveRecord;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
+    protected static ?array $_instancesByCode = null;
+    protected static ?array $_instancesById = null;
+
     /**
      * @inheritDoc
      */
@@ -29,16 +32,54 @@ class BillingCurrency extends BillingCurrencyMeta
     }
 
     /**
+     * @return BillingCurrency[]
+     */
+    public static function getAll()
+    {
+        static::loadInstances();
+        return array_values(static::$_instancesByCode);
+    }
+
+    /**
      * @param $code
-     * @return BillingCurrency|ActiveRecord
+     * @return BillingCurrency
      */
     public static function getByCode($code)
     {
-        $currency = static::find()->where(['code' => $code])->limit(1)->one();
-        if (!$currency) {
+        static::loadInstances();
+
+        if (!isset(static::$_instancesByCode[$code])) {
             throw new BillingException('Not found currency by code: ' . $code);
         }
-        return $currency;
+        return static::$_instancesByCode[$code];
+    }
+
+    /**
+     * @param $id
+     * @return BillingCurrency
+     */
+    public static function getById(int $id)
+    {
+        static::loadInstances();
+
+        if (!isset(static::$_instancesById[$id])) {
+            throw new BillingException('Not found currency by id: ' . $id);
+        }
+        return static::$_instancesById[$id];
+    }
+
+    public static function loadInstances()
+    {
+        if (!static::$_instancesByCode) {
+            static::$_instancesByCode = [];
+            static::$_instancesById = [];
+        }
+
+        foreach (static::find()->all() as $currency) {
+            /** @var static $currency */
+            static::$_instancesByCode[$currency->code] = $currency;
+            static::$_instancesByCode[$currency->primaryKey] = $currency;
+        }
     }
 
     /**

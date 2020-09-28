@@ -13,7 +13,6 @@ use steroids\billing\models\BillingCurrency;
  * @property integer $userId
  * @property integer $currencyId
  * @property integer $balance
- * @property-read BillingCurrency $currency
  */
 abstract class BillingAccountMeta extends Model
 {
@@ -41,14 +40,6 @@ abstract class BillingAccountMeta extends Model
             ['name', 'required'],
             [['userId', 'currencyId', 'balance'], 'integer'],
         ];
-    }
-
-    /**
-     * @return ActiveQuery
-     */
-    public function getCurrency()
-    {
-        return $this->hasOne(BillingCurrency::class, ['id' => 'currencyId']);
     }
 
     public static function meta()

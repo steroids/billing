@@ -45,7 +45,6 @@ class OperationsSearch extends OperationsSearchMeta
     public function prepare($query)
     {
         $query
-            ->with('currency')
             ->joinWith([
                 'fromAccount fa',
                 'fromAccount.user fau',
