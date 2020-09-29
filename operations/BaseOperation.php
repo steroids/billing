@@ -2,6 +2,7 @@
 
 namespace steroids\billing\operations;
 
+use steroids\billing\BillingExecuteEvent;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\exceptions\InsufficientFundsException;
@@ -219,7 +220,7 @@ abstract class BaseOperation extends BaseObject
         $this->saveDocument();
 
         // Trigger event
-        BillingModule::getInstance()->trigger(BillingModule::EVENT_OPERATION_EXECUTE, new Event([
+        BillingModule::getInstance()->trigger(BillingModule::EVENT_OPERATION_EXECUTE, new BillingExecuteEvent([
             'sender' => $this,
         ]));
     }

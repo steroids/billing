@@ -78,7 +78,7 @@ class BillingCurrency extends BillingCurrencyMeta
         foreach (static::find()->all() as $currency) {
             /** @var static $currency */
             static::$_instancesByCode[$currency->code] = $currency;
-            static::$_instancesByCode[$currency->primaryKey] = $currency;
+            static::$_instancesById[$currency->primaryKey] = $currency;
         }
     }
 

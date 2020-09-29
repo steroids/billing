@@ -99,6 +99,8 @@ class BillingAccount extends BillingAccountMeta
             $exception->delta = $delta;
             throw $exception;
         }
+
+        $this->balance += $delta;
     }
 
     /**
