@@ -2,6 +2,8 @@
 
 namespace steroids\billing\models;
 
+use app\billing\enums\SystemAccountName;
+use app\billing\models\BillingAccount;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
@@ -80,6 +82,17 @@ class BillingCurrency extends BillingCurrencyMeta
             static::$_instancesByCode[$currency->code] = $currency;
             static::$_instancesById[$currency->primaryKey] = $currency;
         }
+    }
+
+    /**
+     * @param string $name
+     * @param int|null $userId
+     * @return BillingAccount
+     * @throws \steroids\core\exceptions\ModelSaveException
+     */
+    public function getAccount(string $name, int $userId = null)
+    {
+        return BillingAccount::findOrCreate(SystemAccountName::GATEWAY_MANUAL, $this->primaryKey, $userId);
     }
 
     /**

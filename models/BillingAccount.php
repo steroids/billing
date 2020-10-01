@@ -64,7 +64,7 @@ class BillingAccount extends BillingAccountMeta
      * @param BillingAccount $toAccount
      * @param string|BaseOperation $operationClassName
      * @param array $params
-     * @return mixed
+     * @return BaseOperation
      * @throws \yii\base\Exception
      * @throws \yii\base\InvalidConfigException
      */
