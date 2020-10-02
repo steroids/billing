@@ -33,18 +33,12 @@ class BillingModule extends Module
     /**
      * @var array
      */
-    public array $classesMap = [
-        'steroids\billing\models\BillingAccount' => BillingAccount::class,
-        'steroids\billing\models\BillingCurrency' => BillingCurrency::class,
-        'steroids\billing\models\BillingOperation' => BillingOperation::class,
-    ];
+    public array $classesMap = [];
 
     /**
      * @var array
      */
-    public array $operationsMap = [
-        self::OPERATION_MANUAL => ManualOperation::class,
-    ];
+    public array $operationsMap = [];
 
     /**
      * @example [['class' => 'steroids\billing\rates\EuropeanCentralBankRate']]
@@ -103,6 +97,21 @@ class BillingModule extends Module
             $currencyClass = static::resolveClass(BillingCurrency::class);
             $currencyClass::updateRates($rates, $skipValidation);
         }
+    }
+
+    public function init()
+    {
+        parent::init();
+
+        $this->classesMap = array_merge([
+            'steroids\billing\models\BillingAccount' => BillingAccount::class,
+            'steroids\billing\models\BillingCurrency' => BillingCurrency::class,
+            'steroids\billing\models\BillingOperation' => BillingOperation::class,
+        ], $this->classesMap);
+
+        $this->operationsMap = array_merge([
+            self::OPERATION_MANUAL => ManualOperation::class,
+        ], $this->operationsMap);
     }
 
     /**

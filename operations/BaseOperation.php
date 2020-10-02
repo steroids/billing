@@ -157,6 +157,10 @@ abstract class BaseOperation extends BaseObject
             $value = new $documentClass($value);
         }
         $this->_document = $value;
+
+        if ($this->_document->primaryKey) {
+            $this->documentId = $this->_document->primaryKey;
+        }
     }
 
     /**
@@ -264,6 +268,10 @@ abstract class BaseOperation extends BaseObject
 
         // Save operation
         $this->_model->saveOrPanic();
+
+        // Set relations
+        $this->_model->populateRelation('fromAccount', $this->fromAccount);
+        $this->_model->populateRelation('toAccount', $this->toAccount);
 
         // Update balances
         $this->fromAccount->updateBalance(-1 * $delta);

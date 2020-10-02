@@ -2,12 +2,9 @@
 
 namespace steroids\billing\models;
 
-use app\billing\enums\SystemAccountName;
-use app\billing\models\BillingAccount;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
-use yii\db\ActiveRecord;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
@@ -88,11 +85,15 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param string $name
      * @param int|null $userId
      * @return BillingAccount
+     * @throws BillingException
      * @throws \steroids\core\exceptions\ModelSaveException
+     * @throws \yii\web\NotFoundHttpException
      */
     public function getAccount(string $name, int $userId = null)
     {
-        return BillingAccount::findOrCreate(SystemAccountName::GATEWAY_MANUAL, $this->primaryKey, $userId);
+        return $userId
+            ? BillingAccount::findOrCreate($name, $this->code, $userId)
+            : BillingAccount::findSystem($name, $this->code);
     }
 
     /**

@@ -15,6 +15,8 @@ use yii\db\ActiveQuery;
  * Class BillingAccount
  * @package steroids\billing\models
  * @property-read UserInterface|Model $user
+ * @property-read bool $isSystem
+ * @property-read bool $isUser
  * @property-read BillingCurrency $currency
  */
 class BillingAccount extends BillingAccountMeta
@@ -29,23 +31,44 @@ class BillingAccount extends BillingAccountMeta
 
     /**
      * @param string $name
-     * @param int $currencyId
+     * @param string $currencyCode
+     * @return BillingAccount
+     * @throws \steroids\billing\exceptions\BillingException
+     * @throws \yii\web\NotFoundHttpException
+     */
+    public static function findSystem(string $name, string $currencyCode)
+    {
+        $currency = BillingCurrency::getByCode($currencyCode);
+        $account = static::findOrPanic([
+            'name' => $name,
+            'currencyId' => $currency->primaryKey,
+            'userId' => null,
+        ]);
+        $account->populateRelation('currency', $currency);
+        return $account;
+    }
+
+    /**
+     * @param string $name
+     * @param string $currencyCode
      * @param int $userId
-     * @return array|BillingAccount|\yii\db\ActiveRecord|static
+     * @return BillingAccount
      * @throws \steroids\core\exceptions\ModelSaveException
      */
-    public static function findOrCreate(string $name, int $currencyId, int $userId = null)
+    public static function findOrCreate(string $name, string $currencyCode, int $userId = null)
     {
+        $currency = BillingCurrency::getByCode($currencyCode);
         $params = [
-            'userId' => $userId,
-            'currencyId' => $currencyId,
+            'currencyId' => $currency->primaryKey,
             'name' => $name,
+            'userId' => $userId,
         ];
         $account = static::find()->where($params)->limit(1)->one();
         if (!$account) {
             $account = new static($params);
             $account->saveOrPanic();
         }
+        $account->populateRelation('currency', $currency);
         return $account;
     }
 
@@ -126,5 +149,25 @@ class BillingAccount extends BillingAccountMeta
     public function getCurrency()
     {
         return BillingCurrency::getById($this->currencyId);
+    }
+
+    /**
+     * @return bool
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getIsSystem()
+    {
+        return in_array($this->name, BillingModule::getInstance()->getSystemAccountNames());
+    }
+
+    /**
+     * @return bool
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getIsUser()
+    {
+        return in_array($this->name, BillingModule::getInstance()->getUserAccountNames());
     }
 }

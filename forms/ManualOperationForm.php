@@ -34,14 +34,13 @@ class ManualOperationForm extends ManualOperationFormMeta
             // Get accounts
             /** @var BillingAccount $accountClass */
             $accountClass = BillingModule::resolveClass(BillingAccount::class);
-            $currency = BillingCurrency::getByCode($this->currencyCode);
-            $fromAccount = $accountClass::findOrPanic(['name' => $this->fromAccountName, 'currencyId' => $currency->primaryKey]);
-            $toAccount = $accountClass::findOrCreate($this->toAccountName, $currency->primaryKey, $this->toUserId);
+            $fromAccount = $accountClass::findSystem($this->fromAccountName, $this->currencyCode);
+            $toAccount = $accountClass::findOrCreate($this->toAccountName, $this->currencyCode, $this->toUserId);
 
             // Create operation
             /** @var BaseOperation $operation */
             $operation = $fromAccount->createOperation($toAccount, ManualOperation::class, [
-                'amount' => $currency->amountToInt($this->amount),
+                'amount' => $toAccount->currency->amountToInt($this->amount),
                 'document' => [
                     'userId' => $this->userId,
                     'ipAddress' => $this->ipAddress,

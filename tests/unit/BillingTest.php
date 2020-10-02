@@ -27,15 +27,11 @@ class BillingTest extends TestCase
             $user->saveOrPanic();
         }
 
-        // Get system account
-        $currency = BillingCurrency::getByCode(CurrencyEnum::USD);
-        $fromAccount = BillingAccount::findOrCreate(SystemAccountName::GATEWAY_MANUAL, $currency->primaryKey);
-
         // Charge
         $comment = 'test' . microtime(true);
         $manualForm = new ManualOperationForm([
-            'fromAccountName' => $fromAccount->name,
-            'currencyId' => $fromAccount->currencyId,
+            'fromAccountName' => SystemAccountName::GATEWAY_MANUAL,
+            'currencyCode' => CurrencyEnum::USD,
             'toUserId' => $user->primaryKey,
             'toAccountName' => UserAccountName::MAIN,
             'amount' => 100,
