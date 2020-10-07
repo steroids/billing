@@ -111,7 +111,7 @@ class BillingAccount extends BillingAccountMeta
             $condition = [
                 'and',
                 $condition,
-                ['>=', 'balance', $delta]
+                ['>=', 'balance', abs($delta)]
             ];
         }
 
