@@ -49,13 +49,14 @@ class BillingAccount extends BillingAccountMeta
     }
 
     /**
+     * Find or create users account. For system account use findSystem()
      * @param string $name
      * @param string $currencyCode
      * @param int $userId
      * @return BillingAccount
      * @throws \steroids\core\exceptions\ModelSaveException
      */
-    public static function findOrCreate(string $name, string $currencyCode, int $userId = null)
+    public static function findOrCreate(string $name, string $currencyCode, int $userId)
     {
         $currency = BillingCurrency::getByCode($currencyCode);
         $params = [

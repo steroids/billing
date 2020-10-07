@@ -20,9 +20,11 @@ use yii\base\InvalidConfigException;
  * @property BillingAccount $toAccount
  * @property BillingAccount $document
  */
-abstract class BaseOperation extends BaseObject
+class BaseOperation extends BaseObject
 {
     public string $name;
+
+    public int $amount;
 
     /**
      * @var int
@@ -64,7 +66,10 @@ abstract class BaseOperation extends BaseObject
         return null;
     }
 
-    abstract public function getDelta();
+    public function getDelta()
+    {
+        return (int)$this->amount;
+    }
 
     public function getTitle()
     {
