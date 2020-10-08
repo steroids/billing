@@ -10,7 +10,6 @@ use steroids\billing\models\BillingOperation;
 use steroids\billing\models\BillingAccount;
 use steroids\core\base\Model;
 use yii\base\BaseObject;
-use yii\base\Event;
 use yii\base\InvalidConfigException;
 
 /**
@@ -20,9 +19,11 @@ use yii\base\InvalidConfigException;
  * @property BillingAccount $toAccount
  * @property BillingAccount $document
  */
-abstract class BaseOperation extends BaseObject
+class BaseOperation extends BaseObject
 {
     public string $name;
+
+    public ?int $amount = null;
 
     /**
      * @var int
@@ -87,7 +88,10 @@ abstract class BaseOperation extends BaseObject
         return new $operationClass($data);
     }
 
-    abstract public function getDelta();
+    public function getDelta()
+    {
+        return (int)$this->amount;
+    }
 
     public function getTitle()
     {
@@ -208,7 +212,7 @@ abstract class BaseOperation extends BaseObject
      */
     public function toArray()
     {
-        $attributes = ['name', 'fromAccountId', 'toAccountId', 'documentId', ...$this->attributes()];
+        $attributes = ['name', 'fromAccountId', 'toAccountId', 'documentId', 'amount', ...$this->attributes()];
         $result = [];
         foreach ($attributes as $attribute) {
             $result[$attribute] = $this->$attribute;
