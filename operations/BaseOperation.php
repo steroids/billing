@@ -59,9 +59,32 @@ abstract class BaseOperation extends BaseObject
      */
     private $_document = false;
 
+    /**
+     * @return string|BaseOperation|null
+     */
     public static function getDocumentClass()
     {
         return null;
+    }
+
+    /**
+     * @param array $data
+     * @return BaseOperation
+     * @throws BillingException
+     * @throws \yii\base\Exception
+     */
+    public static function createFromArray(array $data)
+    {
+        if (empty($data['name'])) {
+            throw new BillingException('Param "name" is required for create operation.');
+        }
+        if (empty($data['fromAccountId']) || empty($data['toAccountId'])) {
+            throw new BillingException('Params "fromAccountId" and "toAccountId" is required for create operation.');
+        }
+
+        /** @var BaseOperation $operationClass */
+        $operationClass = BillingModule::getInstance()->getOperationClass($data['name']);
+        return new $operationClass($data);
     }
 
     abstract public function getDelta();
@@ -161,6 +184,36 @@ abstract class BaseOperation extends BaseObject
         if ($this->_document->primaryKey) {
             $this->documentId = $this->_document->primaryKey;
         }
+    }
+
+    /**
+     * @return array
+     * @throws \ReflectionException
+     */
+    public function attributes()
+    {
+        $class = new \ReflectionClass($this);
+        $names = [];
+        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $names[] = $property->getName();
+            }
+        }
+
+        return $names;
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $attributes = ['name', 'fromAccountId', 'toAccountId', 'documentId', ...$this->attributes()];
+        $result = [];
+        foreach ($attributes as $attribute) {
+            $result[$attribute] = $this->$attribute;
+        }
+        return $result;
     }
 
     /**

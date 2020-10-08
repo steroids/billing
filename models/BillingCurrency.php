@@ -8,6 +8,8 @@ use steroids\billing\models\meta\BillingCurrencyMeta;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
+    const USD = 'usd';
+
     protected static ?array $_instancesByCode = null;
     protected static ?array $_instancesById = null;
 
@@ -82,6 +84,55 @@ class BillingCurrency extends BillingCurrencyMeta
     }
 
     /**
+     * @param $fromCode
+     * @param $toCode
+     * @param $amount
+     * @return int
+     * @throws BillingException
+     */
+    public static function convert($fromCode, $toCode, $amount)
+    {
+        return static::getByCode($fromCode)->to($toCode, $amount);
+    }
+
+    /**
+     * @param string $toCode
+     * @param int|null $amount
+     * @return int
+     * @throws BillingException
+     */
+    public function to(string $toCode, int $amount = null)
+    {
+        return static::getByCode($toCode)->fromUsd($this->toUsd($amount));
+    }
+
+    /**
+     * @param int|null $amount
+     * @return int|null
+     */
+    public function toUsd(int $amount = null)
+    {
+        if ($this->code === static::USD) {
+            return $amount;
+        }
+
+        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateUsd);
+    }
+
+    /**
+     * @param int|null $amount
+     * @return int|null
+     */
+    public function fromUsd(int $amount = null)
+    {
+        if ($this->code === static::USD) {
+            return $amount;
+        }
+
+        return (int)round($amount * $this->rateUsd / pow(10, $this->ratePrecision));
+    }
+
+    /**
      * @param string $name
      * @param int|null $userId
      * @return BillingAccount
@@ -136,6 +187,6 @@ class BillingCurrency extends BillingCurrencyMeta
 
     public function amountToInt($value)
     {
-        return round(floatval($value) * pow(10, $this->ratePrecision));
+        return round(floatval($value) * pow(10, $this->precision));
     }
 }
