@@ -159,7 +159,7 @@ class BillingModule extends Module
 
     /**
      * @param string $className
-     * @return int|string
+     * @return string
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
@@ -167,11 +167,11 @@ class BillingModule extends Module
     {
         foreach (BillingModule::getInstance()->operationsMap as $name => $cn) {
             if (trim($className, '\\') === trim($cn, '\\')) {
-                return $name;
+                return (string)$name;
             }
         }
 
-        throw new InvalidConfigException('Not fount operation name by class: ' . static::class);
+        throw new InvalidConfigException('Not fount operation name by class: ' . $className);
     }
 
     /**

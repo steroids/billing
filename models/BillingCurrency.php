@@ -74,12 +74,12 @@ class BillingCurrency extends BillingCurrencyMeta
         if (!static::$_instancesByCode) {
             static::$_instancesByCode = [];
             static::$_instancesById = [];
-        }
 
-        foreach (static::find()->all() as $currency) {
-            /** @var static $currency */
-            static::$_instancesByCode[$currency->code] = $currency;
-            static::$_instancesById[$currency->primaryKey] = $currency;
+            foreach (static::find()->all() as $currency) {
+                /** @var static $currency */
+                static::$_instancesByCode[$currency->code] = $currency;
+                static::$_instancesById[$currency->primaryKey] = $currency;
+            }
         }
     }
 
@@ -185,8 +185,30 @@ class BillingCurrency extends BillingCurrencyMeta
         return $bool;
     }
 
+    /**
+     * @param $value
+     * @return false|float
+     */
     public function amountToInt($value)
     {
         return round(floatval($value) * pow(10, $this->precision));
+    }
+
+    /**
+     * @param int $value
+     * @return float
+     */
+    public function amountToFloat(int $value)
+    {
+        return round(floatval($value) / pow(10, $this->precision), $this->precision);
+    }
+
+    /**
+     * @param int $amount
+     * @return string
+     */
+    public function format(int $amount)
+    {
+        return $this->amountToFloat($amount) . ' ' . $this->label;
     }
 }

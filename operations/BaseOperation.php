@@ -11,9 +11,10 @@ use steroids\billing\models\BillingAccount;
 use steroids\core\base\Model;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
+use yii\helpers\ArrayHelper;
 
 /**
- * @property string $operationName
+ * @property string $name
  * @property BillingOperation $model
  * @property BillingAccount $fromAccount
  * @property BillingAccount $toAccount
@@ -21,8 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class BaseOperation extends BaseObject
 {
-    public string $name;
-
     public ?int $amount = null;
 
     /**
@@ -76,23 +75,41 @@ class BaseOperation extends BaseObject
      */
     public static function createFromArray(array $data)
     {
-        if (empty($data['name'])) {
-            throw new BillingException('Param "name" is required for create operation.');
-        }
         if (empty($data['fromAccountId']) || empty($data['toAccountId'])) {
             throw new BillingException('Params "fromAccountId" and "toAccountId" is required for create operation.');
         }
 
+        $name = ArrayHelper::remove($data, 'name');
+        if (!$name) {
+            throw new BillingException('Param "name" is required for create operation.');
+        }
+
         /** @var BaseOperation $operationClass */
-        $operationClass = BillingModule::getInstance()->getOperationClass($data['name']);
+        $operationClass = BillingModule::getInstance()->getOperationClass($name);
         return new $operationClass($data);
     }
 
-    public function getDelta()
+    /**
+     * @return string
+     * @throws InvalidConfigException
+     * @throws \yii\base\Exception
+     */
+    public function getName()
     {
-        return (int)$this->amount;
+        return BillingModule::getInstance()->getOperationName(get_class($this));
     }
 
+    /**
+     * @return int
+     */
+    public function getDelta()
+    {
+        return abs((int)$this->amount);
+    }
+
+    /**
+     * @return string|null
+     */
     public function getTitle()
     {
         return null;
@@ -135,6 +152,7 @@ class BaseOperation extends BaseObject
     public function setFromAccount(BillingAccount $value)
     {
         $this->_fromAccount = $value;
+        $this->fromAccountId = $value->primaryKey;
     }
 
     /**
@@ -157,6 +175,7 @@ class BaseOperation extends BaseObject
     public function setToAccount(BillingAccount $value)
     {
         $this->_toAccount = $value;
+        $this->toAccountId = $value->primaryKey;
     }
 
     public function getDocument()

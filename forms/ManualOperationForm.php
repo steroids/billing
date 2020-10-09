@@ -38,8 +38,9 @@ class ManualOperationForm extends ManualOperationFormMeta
             $toAccount = $accountClass::findOrCreate($this->toAccountName, $this->currencyCode, $this->toUserId);
 
             // Create operation
-            /** @var BaseOperation $operation */
-            $operation = $fromAccount->createOperation($toAccount, ManualOperation::class, [
+            $operation = new ManualOperation([
+                'fromAccount' => $fromAccount,
+                'toAccount' => $toAccount,
                 'amount' => $toAccount->currency->amountToInt($this->amount),
                 'document' => [
                     'userId' => $this->userId,

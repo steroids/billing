@@ -86,16 +86,13 @@ class BillingAccount extends BillingAccountMeta
 
     /**
      * @param BillingAccount $toAccount
-     * @param string|BaseOperation $operationClassName
+     * @param string $operationClassName
      * @param array $params
-     * @return BaseOperation
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @return mixed
      */
     public function createOperation(BillingAccount $toAccount, string $operationClassName, array $params = [])
     {
         return new $operationClassName(array_merge($params, [
-            'name' => BillingModule::getInstance()->getOperationName($operationClassName),
             'fromAccount' => $this,
             'toAccount' => $toAccount,
         ]));
