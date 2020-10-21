@@ -131,6 +131,21 @@ class BaseBillingOperation extends BaseOperation
     }
 
     /**
+     * @param array $data
+     * @return BaseOperation
+     * @throws BillingException
+     * @throws \yii\base\Exception
+     */
+    public static function createFromArray(array $data)
+    {
+        if (empty($data['fromAccountId']) || empty($data['toAccountId'])) {
+            throw new BillingException('Params "fromAccountId" and "toAccountId" is required for create operation.');
+        }
+
+        return parent::createFromArray($data);
+    }
+
+    /**
      * @return array
      * @throws \ReflectionException
      */

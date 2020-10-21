@@ -22,6 +22,8 @@ use yii\helpers\ArrayHelper;
  */
 class BaseOperation extends BaseObject
 {
+    public int $payerUserId;
+
     /**
      * @var int
      */
@@ -48,10 +50,6 @@ class BaseOperation extends BaseObject
      */
     public static function createFromArray(array $data)
     {
-        if (empty($data['fromAccountId']) || empty($data['toAccountId'])) {
-            throw new BillingException('Params "fromAccountId" and "toAccountId" is required for create operation.');
-        }
-
         $name = ArrayHelper::remove($data, 'name');
         if (!$name) {
             throw new BillingException('Param "name" is required for create operation.');
