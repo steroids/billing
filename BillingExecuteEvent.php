@@ -2,13 +2,13 @@
 
 namespace steroids\billing;
 
-use steroids\billing\operations\BaseOperation;
+use steroids\billing\operations\BaseBillingOperation;
 use yii\base\Event;
 
 class BillingExecuteEvent extends Event
 {
     /**
-     * @var BaseOperation
+     * @var BaseBillingOperation
      */
     public $sender;
 }

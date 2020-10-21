@@ -6,10 +6,7 @@ use steroids\billing\BillingModule;
 use steroids\billing\exceptions\InsufficientFundsException;
 use steroids\billing\forms\meta\ManualOperationFormMeta;
 use steroids\billing\models\BillingAccount;
-use steroids\billing\models\BillingCurrency;
-use steroids\billing\models\BillingManualDocument;
 use steroids\billing\models\BillingOperation;
-use steroids\billing\operations\BaseOperation;
 use steroids\billing\operations\ManualOperation;
 
 /**

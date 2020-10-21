@@ -7,7 +7,6 @@ use steroids\auth\UserInterface;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\InsufficientFundsException;
 use steroids\billing\models\meta\BillingAccountMeta;
-use steroids\billing\operations\BaseOperation;
 use steroids\core\base\Model;
 use yii\db\ActiveQuery;
 

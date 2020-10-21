@@ -8,7 +8,7 @@ use steroids\billing\models\BillingManualDocument;
  * Class ManualOperation
  * @property-read BillingManualDocument $document
  */
-class ManualOperation extends BaseOperation
+class ManualOperation extends BaseBillingOperation
 {
     public function getTitle()
     {

@@ -4,6 +4,7 @@ namespace steroids\billing\models;
 
 use steroids\billing\BillingModule;
 use steroids\billing\models\meta\BillingOperationMeta;
+use steroids\billing\operations\BaseBillingOperation;
 use steroids\billing\operations\BaseOperation;
 
 /**
@@ -34,7 +35,7 @@ class BillingOperation extends BillingOperationMeta
     }
 
     /**
-     * @return BaseOperation
+     * @return BaseOperation|BaseBillingOperation
      */
     public function getOperation()
     {
@@ -42,17 +43,22 @@ class BillingOperation extends BillingOperationMeta
             /** @var BaseOperation $className */
             $className = BillingModule::getInstance()->getOperationClass($this->name);
             $params = [
-                'name' => $this->name,
-                'fromAccountId' => $this->fromAccountId,
-                'toAccountId' => $this->toAccountId,
                 'documentId' => $this->documentId,
-                'model' => $this,
             ];
-            if ($this->isRelationPopulated('fromAccount')) {
-                $params['fromAccount'] = $this->fromAccount;
-            }
-            if ($this->isRelationPopulated('toAccount')) {
-                $params['toAccount'] = $this->toAccount;
+
+            if (is_subclass_of($className, BaseBillingOperation::class)) {
+                $params = array_merge($params, [
+                    'fromAccountId' => $this->fromAccountId,
+                    'toAccountId' => $this->toAccountId,
+                    'model' => $this,
+                ]);
+
+                if ($this->isRelationPopulated('fromAccount')) {
+                    $params['fromAccount'] = $this->fromAccount;
+                }
+                if ($this->isRelationPopulated('toAccount')) {
+                    $params['toAccount'] = $this->toAccount;
+                }
             }
 
             $this->_operation = new $className($params);
