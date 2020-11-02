@@ -130,6 +130,15 @@ class BaseOperation extends BaseObject
         foreach ($this->attributes() as $attribute) {
             $result[$attribute] = $this->$attribute;
         }
+        if ($this->_document && $this->_document->isNewRecord) {
+            $result['document'] = [];
+            foreach ($this->_document->safeAttributes() as $attribute) {
+                $value = $this->_document->$attribute;
+                if ($value !== null) {
+                    $result['document'][$attribute] = $value;
+                }
+            }
+        }
         return $result;
     }
 
