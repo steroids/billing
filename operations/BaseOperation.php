@@ -130,6 +130,9 @@ class BaseOperation extends BaseObject
         foreach ($this->attributes() as $attribute) {
             $result[$attribute] = $this->$attribute;
         }
+
+        // If need save document on save operation - create document instance
+        // Document will be saved, when operation executed
         if ($this->_document && $this->_document->isNewRecord) {
             $result['document'] = [];
             foreach ($this->_document->safeAttributes() as $attribute) {
@@ -139,6 +142,7 @@ class BaseOperation extends BaseObject
                 }
             }
         }
+
         return $result;
     }
 
