@@ -56,7 +56,7 @@ class BaseBillingOperation extends BaseOperation
      */
     public function getDelta()
     {
-        return abs((int)$this->amount);
+        return $this->amount;
     }
 
     /**
@@ -185,9 +185,9 @@ class BaseBillingOperation extends BaseOperation
             throw new BillingException("Accounts have different currencies: {$this->fromAccount->currencyId}, {$this->toAccount->currencyId}");
         }
 
-        $delta = (int)$this->getDelta();
-        if ($delta === 0) {
-            throw new BillingException('Delta incorrect or cannot be zero!');
+        $delta = $this->getDelta();
+        if (!is_int($delta) || $delta <= 0) {
+            throw new BillingException('Delta incorrect or cannot be zero! Value: ' . $delta);
         }
 
         // Decrease in deposit account, if main is insufficiently balance
