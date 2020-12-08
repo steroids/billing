@@ -36,10 +36,12 @@ class M000000200000Billing extends Migration
             'delta' => $this->bigInteger(),
             'createTime' => $this->dateTime(),
         ]);
+        $this->createIndex('billing_currencies_code', 'billing_currencies', 'code', true);
     }
 
     public function safeDown()
     {
+        $this->dropIndex('billing_currencies_code', 'billing_currencies');
         $this->dropTable('billing_accounts');
         $this->dropTable('billing_currencies');
         $this->dropTable('billing_operations');
