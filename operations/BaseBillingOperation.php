@@ -167,6 +167,19 @@ class BaseBillingOperation extends BaseOperation
         ];
     }
 
+    public function executeOnce()
+    {
+        $condition = [
+            'name' => $this->name,
+            'toAccountId' => $this->toAccountId,
+            'fromAccountId' => $this->fromAccountId,
+            'documentId' => $this->documentId,
+        ];
+        if (!BillingOperation::find()->where($condition)->exists()) {
+            $this->execute();
+        }
+    }
+
     /**
      * @throws BillingException
      * @throws InsufficientFundsException

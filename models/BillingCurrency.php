@@ -191,6 +191,9 @@ class BillingCurrency extends BillingCurrencyMeta
      */
     public function amountToInt($value)
     {
+        if ($value === null) {
+            return null;
+        }
         return round(floatval($value) * pow(10, $this->precision));
     }
 
@@ -198,8 +201,11 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param int $value
      * @return float
      */
-    public function amountToFloat(int $value)
+    public function amountToFloat($value)
     {
+        if ($value === null) {
+            return null;
+        }
         return round(floatval($value) / pow(10, $this->precision), $this->precision);
     }
 
@@ -207,8 +213,11 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param int $amount
      * @return string
      */
-    public function format(int $amount)
+    public function format($amount)
     {
+        if ($amount === null) {
+            return null;
+        }
         return $this->amountToFloat($amount) . ' ' . $this->label;
     }
 }
