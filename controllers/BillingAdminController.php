@@ -6,6 +6,8 @@ use steroids\billing\BillingModule;
 use steroids\billing\forms\ManualOperationForm;
 use steroids\billing\forms\OperationsSearch;
 use steroids\billing\models\BillingCurrency;
+use steroids\billing\models\BillingOperation;
+use steroids\billing\operations\RollbackOperation;
 use steroids\core\base\SearchModel;
 use yii\web\Controller;
 
@@ -20,6 +22,7 @@ class BillingAdminController extends Controller
                     'get-currency' => "GET $baseUrl/currencies/<id>",
                     'update-currency' => "POST $baseUrl/currencies/<id>",
                     'get-operations' => "GET $baseUrl/operations",
+                    'rollback-operation' => "POST $baseUrl/operations/<id:\d+>/rollback",
                     'create-manual' => "POST $baseUrl/operations",
                 ],
             ],
@@ -69,6 +72,21 @@ class BillingAdminController extends Controller
         $model = new OperationsSearch();
         $model->search(\Yii::$app->request->get());
         return $model;
+    }
+
+    /**
+     * @param string $id
+     * @throws \yii\web\NotFoundHttpException
+     */
+    public function actionRollbackOperation(string $id)
+    {
+        $operation = BillingOperation::findOrPanic(['id' => (int)$id]);
+        (new RollbackOperation([
+            'fromAccount' => $operation->toAccount,
+            'toAccount' => $operation->fromAccount,
+            'document' => $operation,
+            'amount' => $operation->delta,
+        ]))->executeOnce();
     }
 
     /**

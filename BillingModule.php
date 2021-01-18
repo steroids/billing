@@ -8,6 +8,7 @@ use steroids\billing\operations\ManualOperation;
 use steroids\billing\models\BillingAccount;
 use steroids\billing\models\BillingCurrency;
 use steroids\billing\models\BillingOperation;
+use steroids\billing\operations\RollbackOperation;
 use steroids\billing\rates\BaseRate;
 use steroids\core\base\Enum;
 use steroids\core\base\Module;
@@ -17,6 +18,7 @@ use yii\helpers\ArrayHelper;
 class BillingModule extends Module
 {
     const OPERATION_MANUAL = 'manual';
+    const OPERATION_ROLLBACK = 'rollback';
 
     const EVENT_OPERATION_EXECUTE = 'operation_execute';
 
@@ -111,6 +113,7 @@ class BillingModule extends Module
 
         $this->operationsMap = array_merge([
             self::OPERATION_MANUAL => ManualOperation::class,
+            self::OPERATION_ROLLBACK => RollbackOperation::class,
         ], $this->operationsMap);
     }
 
