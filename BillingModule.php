@@ -174,7 +174,7 @@ class BillingModule extends Module
             }
         }
 
-        throw new InvalidConfigException('Not fount operation name by class: ' . $className);
+        throw new InvalidConfigException('Not found operation name by class: ' . $className);
     }
 
     /**

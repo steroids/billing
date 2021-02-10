@@ -195,7 +195,7 @@ class BaseBillingOperation extends BaseOperation
 
         // Check currency
         if ($this->fromAccount->currencyId !== $this->toAccount->currencyId) {
-            throw new BillingException("Accounts have different currencies: {$this->fromAccount->currencyId}, {$this->toAccount->currencyId}");
+            throw new BillingException("Accounts have different currencies: {$this->fromAccount->currency->code}, {$this->toAccount->currency->code}");
         }
 
         $delta = $this->getDelta();
