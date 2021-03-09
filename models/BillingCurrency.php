@@ -92,6 +92,9 @@ class BillingCurrency extends BillingCurrencyMeta
      */
     public static function convert($fromCode, $toCode, $amount)
     {
+        if ($fromCode === $toCode) {
+            return $amount;
+        }
         return static::getByCode($fromCode)->to($toCode, $amount);
     }
 
@@ -103,6 +106,9 @@ class BillingCurrency extends BillingCurrencyMeta
      */
     public function to(string $toCode, int $amount = null)
     {
+        if ($this->code === $toCode) {
+            return $amount;
+        }
         return static::getByCode($toCode)->fromUsd($this->toUsd($amount));
     }
 
