@@ -185,7 +185,13 @@ class BillingCurrency extends BillingCurrencyMeta
         // TODO Update in one request via INSERT + ON DUPLICATE UPDATE
         // Save in database
         foreach ($toUpdate as $id => $value) {
-            static::updateAll(['rateUsd' => $value], ['id' => $id]);
+            static::updateAll(
+                [
+                    'rateUsd' => $value,
+                    'updateTime' => (new \DateTime())->format('Y-m-d H:i:s'),
+                ],
+                ['id' => $id]
+            );
         }
 
         return $bool;
