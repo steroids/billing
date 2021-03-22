@@ -16,6 +16,8 @@ use \Yii;
  * @property boolean $isVisible
  * @property string $createTime
  * @property string $updateTime
+ * @property integer $sellRateUsd
+ * @property integer $buyRateUsd
  */
 abstract class BillingCurrencyMeta extends Model
 {
@@ -43,7 +45,7 @@ abstract class BillingCurrencyMeta extends Model
             ...parent::rules(),
             ['code', 'string', 'max' => '32'],
             [['code', 'precision'], 'required'],
-            [['precision', 'rateUsd', 'ratePrecision'], 'integer'],
+            [['precision', 'rateUsd', 'ratePrecision', 'sellRateUsd', 'buyRateUsd'], 'integer'],
             ['label', 'string', 'max' => 255],
             ['isVisible', 'steroids\\core\\validators\\ExtBooleanValidator'],
         ];
@@ -116,6 +118,16 @@ abstract class BillingCurrencyMeta extends Model
                 'appType' => 'autoTime',
                 'isPublishToFrontend' => false,
                 'touchOnUpdate' => true
+            ],
+            'sellRateUsd' => [
+                'label' => Yii::t('steroids', 'Курс продажи к доллару'),
+                'appType' => 'integer',
+                'isPublishToFrontend' => false
+            ],
+            'buyRateUsd' => [
+                'label' => Yii::t('steroids', 'Курс покупки к доллару'),
+                'appType' => 'integer',
+                'isPublishToFrontend' => false
             ]
         ]);
     }

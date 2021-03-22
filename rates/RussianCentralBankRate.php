@@ -1,0 +1,51 @@
+<?php
+
+
+namespace steroids\billing\rates;
+
+
+use Exception;
+use steroids\billing\structure\CurrencyRates;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Json;
+
+class RussianCentralBankRate extends BaseRate
+{
+    /**
+     * @var array
+     */
+    public array $currencyCodes = [
+        self::CURRENCY_RUB,
+        self::CURRENCY_EUR,
+    ];
+
+    public string $url = 'https://www.cbr-xml-daily.ru/latest.js';
+
+    /**
+     * @inheritDoc
+     */
+    public function fetch()
+    {
+        $response = file_get_contents($this->url);
+
+        // Parse response
+        $data = Json::decode($response);
+        $rates = ArrayHelper::getValue($data, 'rates');
+        if (!$rates) {
+            throw new Exception('Wrong api.exchangeratesapi.io response: ' . $response);
+        }
+
+        return [
+            self::CURRENCY_EUR => new CurrencyRates([
+                'rateUsd' => round(
+                    ArrayHelper::getValue($rates, 'EUR') / ArrayHelper::getValue($rates, 'USD'),
+                    2
+                )
+            ]),
+            self::CURRENCY_RUB => new CurrencyRates(round(
+                1 / ArrayHelper::getValue($rates, 'USD'),
+                2
+            ))
+        ];
+    }
+}

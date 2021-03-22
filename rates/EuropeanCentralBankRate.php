@@ -2,6 +2,7 @@
 
 namespace steroids\billing\rates;
 
+use steroids\billing\structure\CurrencyRates;
 use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
@@ -50,7 +51,9 @@ class EuropeanCentralBankRate extends BaseRate
         // Normalize values
         $result = [];
         foreach ($rates as $code => $value) {
-            $result[strtolower($code)] = round((float)$value, 2);
+            $result[strtolower($code)] = new CurrencyRates([
+                'rateUsd' => round((float)$value, 2)
+            ]);
         }
 
         return $result;
