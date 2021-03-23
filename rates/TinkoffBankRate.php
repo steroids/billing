@@ -20,8 +20,8 @@ class TinkoffBankRate extends BaseRate
      * @var array
      */
     protected array $currencyCodesMap = [
-        self::EUR => self::CURRENCY_RUB,
-        self::RUB => self::CURRENCY_EUR,
+        self::EUR => self::CURRENCY_EUR,
+        self::RUB => self::CURRENCY_RUB,
     ];
 
     public array $currencyCodes = [
