@@ -173,13 +173,7 @@ class BillingCurrency extends BillingCurrencyMeta
              * @var CurrencyRates $currencyRates
              */
             $currencyRates = $rates[$currency->code];
-            $rateUsd = $currencyRates->rateUsd
-                ? $currency->amountToInt($currencyRates->rateUsd)
-                : null;
-
-            if(!$rateUsd){
-                $rateUsd = $currency->rateUsd;
-            }
+            $rateUsd = $currencyRates->rateUsd ?? $currency->rateUsd;
 
             // Validate changes percent
             if (!$skipValidation && $currency->rateUsd) {
@@ -193,12 +187,8 @@ class BillingCurrency extends BillingCurrencyMeta
 
             $toUpdate[$currency->primaryKey] = [
                 'rateUsd' => $rateUsd,
-                'sellRateUsd' => $currencyRates->sellRateUsd
-                    ? $currency->amountToInt($currencyRates->sellRateUsd)
-                    : $currency->sellRateUsd,
-                'buyRateUsd' => $currencyRates->buyRateUsd
-                    ? $currency->amountToInt($currencyRates->buyRateUsd)
-                    : $currency->buyRateUsd,
+                'sellRateUsd' => $currencyRates->sellRateUsd ?? $currency->sellRateUsd,
+                'buyRateUsd' => $currencyRates->buyRateUsd ?? $currency->buyRateUsd
             ];
         }
 

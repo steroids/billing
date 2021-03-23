@@ -5,6 +5,7 @@ namespace steroids\billing\rates;
 
 
 use Exception;
+use steroids\billing\models\BillingCurrency;
 use steroids\billing\structure\CurrencyRates;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
@@ -14,11 +15,17 @@ class TinkoffBankRate extends BaseRate
     /**
      * @var array
      */
+    public array $currencyCodesMap = [
+        'RUB' => self::CURRENCY_RUB,
+        'EUR' => self::CURRENCY_EUR,
+    ];
+
     public array $currencyCodes = [
         self::CURRENCY_RUB,
         self::CURRENCY_EUR,
     ];
 
+    public $usdCode = 'USD';
     public $url = 'https://www.tinkoff.ru/api/v1/currency_rates/';
 
     private $categoryName = 'SMETransferAbove100';
@@ -43,22 +50,23 @@ class TinkoffBankRate extends BaseRate
                 $category['category'] !== $this->categoryName ||
                 !isset($category['sell']) ||
                 !isset($category['buy']) ||
-                $category['fromCurrency']['name'] !== 'USD'
+                $category['fromCurrency']['name'] !== $this->usdCode ||
+                !isset($this->currencyCodesMap[$category['toCurrency']['name']])
             ) {
                 continue;
             }
-
-            $ratesByCurrency[mb_strtolower($category['toCurrency']['name'])] = [
+            $ratesByCurrency[$this->currencyCodesMap[$category['toCurrency']['name']]] = [
                 'buyRate' => $category['buy'],
                 'sellRate' => $category['sell']
             ];
         }
 
+        $currency = BillingCurrency::getByCode(self::CURRENCY_USD);
         $result = [];
-        foreach ($this->currencyCodes as $currencyCode) {
+        foreach ($this->currencyCodesMap as $companyCurrencyCode => $currencyCode) {
             $result[$currencyCode] = new CurrencyRates([
-                'sellRateUsd' => $ratesByCurrency[$currencyCode]['sellRate'],
-                'buyRateUsd' => $ratesByCurrency[$currencyCode]['buyRate'],
+                'sellRateUsd' => $currency->amountToInt($ratesByCurrency[$currencyCode]['sellRate']),
+                'buyRateUsd' => $currency->amountToInt($ratesByCurrency[$currencyCode]['buyRate']),
             ]);
         }
 

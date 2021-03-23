@@ -8,8 +8,8 @@ use yii\base\BaseObject;
 
 class CurrencyRates extends BaseObject
 {
-    public ?float $rateUsd = null;
-    public ?float $sellRateUsd = null;
-    public ?float $buyRateUsd = null;
+    public ?int $rateUsd = null;
+    public ?int $sellRateUsd = null;
+    public ?int $buyRateUsd = null;
 
 }
