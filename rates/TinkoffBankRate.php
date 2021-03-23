@@ -45,7 +45,7 @@ class TinkoffBankRate extends BaseRate
         $ratesByCategories = ArrayHelper::getValue($data, 'payload.rates');
 
         if (!$ratesByCategories) {
-            throw new Exception('Wrong api.exchangeratesapi.io response: ' . $response);
+            throw new Exception('Wrong response: ' . $response);
         }
 
         $ratesByCurrency = [];
@@ -69,7 +69,7 @@ class TinkoffBankRate extends BaseRate
         $result = [];
         foreach ($this->currencyCodesMap as $companyCurrencyCode => $currencyCode) {
             if(!isset($ratesByCurrency[$currencyCode])){
-                throw new Exception('Not found needed currency, try later');
+                continue;
             }
 
             $result[$currencyCode] = new CurrencyRates([
