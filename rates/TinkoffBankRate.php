@@ -12,12 +12,16 @@ use yii\helpers\Json;
 
 class TinkoffBankRate extends BaseRate
 {
+    const USD_CODE = 'USD';
+    const EUR_CODE = 'EUR';
+    const RUB_CODE = 'RUB';
+
     /**
      * @var array
      */
-    public array $currencyCodesMap = [
-        'RUB' => self::CURRENCY_RUB,
-        'EUR' => self::CURRENCY_EUR,
+    protected array $currencyCodesMap = [
+        self::EUR_CODE => self::CURRENCY_RUB,
+        self::RUB_CODE => self::CURRENCY_EUR,
     ];
 
     public array $currencyCodes = [
@@ -25,7 +29,6 @@ class TinkoffBankRate extends BaseRate
         self::CURRENCY_EUR,
     ];
 
-    public $usdCode = 'USD';
     public $url = 'https://www.tinkoff.ru/api/v1/currency_rates/';
 
     private $categoryName = 'SMETransferAbove100';
@@ -50,7 +53,7 @@ class TinkoffBankRate extends BaseRate
                 $category['category'] !== $this->categoryName ||
                 !isset($category['sell']) ||
                 !isset($category['buy']) ||
-                $category['fromCurrency']['name'] !== $this->usdCode ||
+                $category['fromCurrency']['name'] !== self::USD_CODE ||
                 !isset($this->currencyCodesMap[$category['toCurrency']['name']])
             ) {
                 continue;

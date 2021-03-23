@@ -176,11 +176,16 @@ class BillingCurrency extends BillingCurrencyMeta
             $rateUsd = $currencyRates->rateUsd ?? $currency->rateUsd;
 
             // Validate changes percent
-            if (!$skipValidation && $currency->rateUsd) {
-                $percent = round((abs($currency->rateUsd - $rateUsd) / $currency->rateUsd) * 100, 2);
-                if ($percent > BillingModule::getInstance()->rateMaxDeviationPercent) {
-                    \Yii::warning("Wrong rate value for currency {$currency->code}: {$currency->rateUsd} -> {$rateUsd} (deviation {$percent}%}");
-                    $bool = false;
+            if(!$skipValidation){
+                foreach ($currencyRates as $attribute => $value){
+                    $percent = round((abs($currency->$attribute - $value) / $currency->$attribute) * 100, 2);
+                    if ($percent > BillingModule::getInstance()->rateMaxDeviationPercent) {
+                        \Yii::warning("Wrong rate value for currency {$currency->code}: {$currency->$attribute} -> {$value} (deviation {$percent}%}");
+                        $bool = false;
+                        continue;
+                    }
+                }
+                if(!$bool){
                     continue;
                 }
             }
