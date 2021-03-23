@@ -5,6 +5,8 @@ namespace steroids\billing\models;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
+use steroids\billing\structure\CurrencyRates;
+use function PHPUnit\Framework\isNull;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
@@ -155,7 +157,7 @@ class BillingCurrency extends BillingCurrencyMeta
 
     /**
      * Update rates
-     * @param array $rates Key-value array (code -> rawValue)
+     * @param array $rates Key-value array (code -> CurrencyRates)
      * @param bool $skipValidation Set true for skip deviation value validation and force update
      * @return bool
      * @throws \yii\base\Exception
@@ -166,32 +168,42 @@ class BillingCurrency extends BillingCurrencyMeta
         $toUpdate = [];
 
         $currencies = static::findAll(['code' => array_keys($rates)]);
+
         foreach ($currencies as $currency) {
-            $value = $currency->amountToInt($rates[$currency->code]);
+
+            /**
+             * @var CurrencyRates $currencyRates
+             */
+            $currencyRates = $rates[$currency->code];
 
             // Validate changes percent
-            if (!$skipValidation && $currency->rateUsd) {
-                $percent = round((abs($currency->rateUsd - $value) / $currency->rateUsd) * 100, 2);
-                if ($percent > BillingModule::getInstance()->rateMaxDeviationPercent) {
-                    \Yii::warning("Wrong rate value for currency {$currency->code}: {$currency->rateUsd} -> {$value} (deviation {$percent}%}");
-                    $bool = false;
-                    continue;
+            if(!$skipValidation){
+                foreach ($currencyRates as $attribute => $value){
+                    if(!$value || !$currency->$attribute){
+                        continue;
+                    }
+
+                    $percent = round((abs($currency->$attribute - $value) / $currency->$attribute) * 100, 2);
+                    if ($percent > BillingModule::getInstance()->rateMaxDeviationPercent) {
+                        \Yii::warning("Wrong rate value for currency {$currency->code}: {$currency->$attribute} -> {$value} (deviation {$percent}%}");
+                        $bool = false;
+                        continue 2;
+                    }
                 }
             }
 
-            $toUpdate[$currency->primaryKey] = $value;
+            $toUpdate[$currency->primaryKey] = [
+                'rateUsd' => $currencyRates->rateUsd ?? $currency->rateUsd,
+                'sellRateUsd' => $currencyRates->sellRateUsd ?? $currency->sellRateUsd,
+                'buyRateUsd' => $currencyRates->buyRateUsd ?? $currency->buyRateUsd,
+                'updateTime' => (new \DateTime())->format('Y-m-d H:i:s')
+            ];
         }
 
         // TODO Update in one request via INSERT + ON DUPLICATE UPDATE
         // Save in database
-        foreach ($toUpdate as $id => $value) {
-            static::updateAll(
-                [
-                    'rateUsd' => $value,
-                    'updateTime' => (new \DateTime())->format('Y-m-d H:i:s'),
-                ],
-                ['id' => $id]
-            );
+        foreach ($toUpdate as $id => $currencyRates) {
+            static::updateAll($currencyRates, ['id' => $id]);
         }
 
         return $bool;
