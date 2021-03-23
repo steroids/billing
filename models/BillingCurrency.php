@@ -6,6 +6,7 @@ use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
 use steroids\billing\structure\CurrencyRates;
+use function PHPUnit\Framework\isNull;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
@@ -167,31 +168,32 @@ class BillingCurrency extends BillingCurrencyMeta
         $toUpdate = [];
 
         $currencies = static::findAll(['code' => array_keys($rates)]);
+
         foreach ($currencies as $currency) {
 
             /**
              * @var CurrencyRates $currencyRates
              */
             $currencyRates = $rates[$currency->code];
-            $rateUsd = $currencyRates->rateUsd ?? $currency->rateUsd;
 
             // Validate changes percent
             if(!$skipValidation){
                 foreach ($currencyRates as $attribute => $value){
+                    if(!$value || !$currency->$attribute){
+                        continue;
+                    }
+
                     $percent = round((abs($currency->$attribute - $value) / $currency->$attribute) * 100, 2);
                     if ($percent > BillingModule::getInstance()->rateMaxDeviationPercent) {
                         \Yii::warning("Wrong rate value for currency {$currency->code}: {$currency->$attribute} -> {$value} (deviation {$percent}%}");
                         $bool = false;
-                        continue;
+                        continue 2;
                     }
-                }
-                if(!$bool){
-                    continue;
                 }
             }
 
             $toUpdate[$currency->primaryKey] = [
-                'rateUsd' => $rateUsd,
+                'rateUsd' => $currencyRates->rateUsd ?? $currency->rateUsd,
                 'sellRateUsd' => $currencyRates->sellRateUsd ?? $currency->sellRateUsd,
                 'buyRateUsd' => $currencyRates->buyRateUsd ?? $currency->buyRateUsd
             ];

@@ -12,16 +12,16 @@ use yii\helpers\Json;
 
 class TinkoffBankRate extends BaseRate
 {
-    const USD_CODE = 'USD';
-    const EUR_CODE = 'EUR';
-    const RUB_CODE = 'RUB';
+    const USD = 'USD';
+    const EUR = 'EUR';
+    const RUB = 'RUB';
 
     /**
      * @var array
      */
     protected array $currencyCodesMap = [
-        self::EUR_CODE => self::CURRENCY_RUB,
-        self::RUB_CODE => self::CURRENCY_EUR,
+        self::EUR => self::CURRENCY_RUB,
+        self::RUB => self::CURRENCY_EUR,
     ];
 
     public array $currencyCodes = [
@@ -43,6 +43,7 @@ class TinkoffBankRate extends BaseRate
         // Parse response
         $data = Json::decode($response);
         $ratesByCategories = ArrayHelper::getValue($data, 'payload.rates');
+
         if (!$ratesByCategories) {
             throw new Exception('Wrong api.exchangeratesapi.io response: ' . $response);
         }
@@ -53,7 +54,7 @@ class TinkoffBankRate extends BaseRate
                 $category['category'] !== $this->categoryName ||
                 !isset($category['sell']) ||
                 !isset($category['buy']) ||
-                $category['fromCurrency']['name'] !== self::USD_CODE ||
+                $category['fromCurrency']['name'] !== self::USD ||
                 !isset($this->currencyCodesMap[$category['toCurrency']['name']])
             ) {
                 continue;
@@ -67,6 +68,10 @@ class TinkoffBankRate extends BaseRate
         $currency = BillingCurrency::getByCode(self::CURRENCY_USD);
         $result = [];
         foreach ($this->currencyCodesMap as $companyCurrencyCode => $currencyCode) {
+            if(!isset($ratesByCurrency[$currencyCode])){
+                throw new Exception('Not found needed currency, try later');
+            }
+
             $result[$currencyCode] = new CurrencyRates([
                 'sellRateUsd' => $currency->amountToInt($ratesByCurrency[$currencyCode]['sellRate']),
                 'buyRateUsd' => $currency->amountToInt($ratesByCurrency[$currencyCode]['buyRate']),
