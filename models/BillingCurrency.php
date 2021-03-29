@@ -6,7 +6,7 @@ use steroids\billing\BillingModule;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
 use steroids\billing\structure\CurrencyRates;
-use function PHPUnit\Framework\isNull;
+use steroids\payment\enums\PaymentDirection;
 
 class BillingCurrency extends BillingCurrencyMeta
 {
@@ -89,55 +89,78 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param $fromCode
      * @param $toCode
      * @param $amount
+     * @param PaymentDirection|null $direction
      * @return int
      * @throws BillingException
      */
-    public static function convert($fromCode, $toCode, $amount)
+    public static function convert($fromCode, $toCode, $amount, $direction = null)
     {
         if ($fromCode === $toCode) {
             return $amount;
         }
-        return static::getByCode($fromCode)->to($toCode, $amount);
+
+        return static::getByCode($fromCode)->to($toCode, $amount, $direction);
     }
 
     /**
      * @param string $toCode
      * @param int|null $amount
+     * @param PaymentDirection|null $direction
      * @return int
      * @throws BillingException
      */
-    public function to(string $toCode, int $amount = null)
+    public function to(string $toCode, int $amount = null, $direction = null)
     {
         if ($this->code === $toCode) {
             return $amount;
         }
-        return static::getByCode($toCode)->fromUsd($this->toUsd($amount));
+
+        return static::getByCode($toCode)->fromUsd($this->toUsd($amount, $direction));
     }
 
     /**
      * @param int|null $amount
+     * @param PaymentDirection|null $direction
      * @return int|null
      */
-    public function toUsd(int $amount = null)
+    public function toUsd(int $amount = null, $direction = null)
     {
         if ($this->code === static::USD) {
             return $amount;
         }
 
-        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateUsd);
+        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateByDirection($direction));
     }
 
     /**
      * @param int|null $amount
+     * @param PaymentDirection|null $direction
      * @return int|null
      */
-    public function fromUsd(int $amount = null)
+    public function fromUsd(int $amount = null, $direction = null)
     {
         if ($this->code === static::USD) {
             return $amount;
         }
 
-        return (int)round($amount * $this->rateUsd / pow(10, $this->ratePrecision));
+        return (int)round($amount * $this->rateByDirection($direction) / pow(10, $this->ratePrecision));
+    }
+
+    /**
+     * @param PaymentDirection|null $direction
+     * @return int
+     */
+    protected function rateByDirection($direction)
+    {
+        if ($direction && $direction === PaymentDirection::CHARGE) {
+            return $this->buyRateUsd ?? $this->rateUsd;
+        }
+
+        if ($direction && $direction === PaymentDirection::WITHDRAW) {
+            return $this->sellRateUsd ?? $this->rateUsd;
+        }
+
+        return $this->rateUsd;
     }
 
     /**
@@ -177,9 +200,9 @@ class BillingCurrency extends BillingCurrencyMeta
             $currencyRates = $rates[$currency->code];
 
             // Validate changes percent
-            if(!$skipValidation){
-                foreach ($currencyRates as $attribute => $value){
-                    if(!$value || !$currency->$attribute){
+            if (!$skipValidation) {
+                foreach ($currencyRates as $attribute => $value) {
+                    if (!$value || !$currency->$attribute) {
                         continue;
                     }
 
