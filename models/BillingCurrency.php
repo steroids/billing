@@ -3,6 +3,7 @@
 namespace steroids\billing\models;
 
 use steroids\billing\BillingModule;
+use steroids\billing\enums\BillingCurrencyRateDirectionEnum;
 use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingCurrencyMeta;
 use steroids\billing\structure\CurrencyRates;
@@ -89,23 +90,23 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param $fromCode
      * @param $toCode
      * @param $amount
-     * @param PaymentDirection|null $direction
+     * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int
      * @throws BillingException
      */
-    public static function convert($fromCode, $toCode, $amount, $direction = null)
+    public static function convert($fromCode, $toCode, $amount, $rateDirection = null)
     {
         if ($fromCode === $toCode) {
             return $amount;
         }
 
-        return static::getByCode($fromCode)->to($toCode, $amount, $direction);
+        return static::getByCode($fromCode)->to($toCode, $amount, $rateDirection);
     }
 
     /**
      * @param string $toCode
      * @param int|null $amount
-     * @param PaymentDirection|null $direction
+     * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int
      * @throws BillingException
      */
@@ -120,43 +121,43 @@ class BillingCurrency extends BillingCurrencyMeta
 
     /**
      * @param int|null $amount
-     * @param PaymentDirection|null $direction
+     * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int|null
      */
-    public function toUsd(int $amount = null, $direction = null)
+    public function toUsd(int $amount = null, $rateDirection = null)
     {
         if ($this->code === static::USD) {
             return $amount;
         }
 
-        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateByDirection($direction));
+        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateByDirection($rateDirection));
     }
 
     /**
      * @param int|null $amount
-     * @param PaymentDirection|null $direction
+     * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int|null
      */
-    public function fromUsd(int $amount = null, $direction = null)
+    public function fromUsd(int $amount = null, $rateDirection = null)
     {
         if ($this->code === static::USD) {
             return $amount;
         }
 
-        return (int)round($amount * $this->rateByDirection($direction) / pow(10, $this->ratePrecision));
+        return (int)round($amount * $this->rateByDirection($rateDirection) / pow(10, $this->ratePrecision));
     }
 
     /**
-     * @param PaymentDirection|null $direction
+     * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int
      */
-    protected function rateByDirection($direction)
+    protected function rateByDirection($rateDirection)
     {
-        if ($direction && $direction === PaymentDirection::CHARGE) {
+        if ($rateDirection && $rateDirection === BillingCurrencyRateDirectionEnum::SELL) {
             return $this->buyRateUsd ?? $this->rateUsd;
         }
 
-        if ($direction && $direction === PaymentDirection::WITHDRAW) {
+        if ($rateDirection && $rateDirection === BillingCurrencyRateDirectionEnum::BUY) {
             return $this->sellRateUsd ?? $this->rateUsd;
         }
 
