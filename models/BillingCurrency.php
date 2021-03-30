@@ -151,7 +151,7 @@ class BillingCurrency extends BillingCurrencyMeta
      * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int
      */
-    protected function rateByDirection($rateDirection)
+    public function rateByDirection($rateDirection)
     {
         if ($rateDirection && $rateDirection === BillingCurrencyRateDirectionEnum::BUY) {
             return $this->buyRateUsd ?? $this->rateUsd;
