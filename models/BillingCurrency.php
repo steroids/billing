@@ -110,13 +110,13 @@ class BillingCurrency extends BillingCurrencyMeta
      * @return int
      * @throws BillingException
      */
-    public function to(string $toCode, int $amount = null, $direction = null)
+    public function to(string $toCode, int $amount = null, $rateDirection = null)
     {
         if ($this->code === $toCode) {
             return $amount;
         }
 
-        return static::getByCode($toCode)->fromUsd($this->toUsd($amount, $direction));
+        return static::getByCode($toCode)->fromUsd($this->toUsd($amount, $rateDirection), $rateDirection);
     }
 
     /**
