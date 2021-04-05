@@ -33,12 +33,13 @@ class EuropeanCentralBankRate extends BaseRate
     public function fetch()
     {
         // Send request:
-        //   https://api.exchangeratesapi.io/latest?base=USD&symbols=RUB,EUR
+        //   http://api.exchangeratesapi.io/v1/latest?base=USD&symbols=RUB,EUR
         // Expected Response:
         //   {"rates": {"EUR":0.8457374831, "RUB":75.9667625169}, "base": "USD", "date": "2020-09-07"}
         $params = [
             'access_key' => $this->module->europeanCentralBankApiKey,
-            'base' => $this->getAlias(self::CURRENCY_USD),
+            //not support in base plan
+//            'base' => $this->getAlias(self::CURRENCY_USD),
             'symbols' => implode(',', array_map(fn($code) => $this->getAlias($code), $this->currencyCodes)),
         ];
         $response = file_get_contents($this->url . '?' . http_build_query($params));
@@ -51,15 +52,21 @@ class EuropeanCentralBankRate extends BaseRate
         }
 
         // Normalize values
-        $result = [];
         $currency = BillingCurrency::getByCode(self::CURRENCY_USD);
-        foreach ($rates as $code => $value) {
-            $result[strtolower($code)] = new CurrencyRates([
-                'rateUsd' => $currency->amountToInt(round((float)$value, 2))
-            ]);
-        }
-
-        return $result;
+        return [
+            self::CURRENCY_EUR => new CurrencyRates([
+                'rateUsd' => $currency->amountToInt(round(
+                    ArrayHelper::getValue($rates, 'EUR') / ArrayHelper::getValue($rates, 'USD'),
+                    2
+                ))
+            ]),
+            self::CURRENCY_RUB => new CurrencyRates([
+                'rateUsd' => $currency->amountToInt(round(
+                    1 / ArrayHelper::getValue($rates, 'USD'),
+                    2
+                ))
+            ])
+        ];
     }
 
     /**
