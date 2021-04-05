@@ -20,12 +20,13 @@ class EuropeanCentralBankRate extends BaseRate
     public array $currencyCodes = [
         self::CURRENCY_RUB,
         self::CURRENCY_EUR,
+        self::CURRENCY_USD,
     ];
 
     /**
      * @var string
      */
-    public string $url = 'https://api.exchangeratesapi.io/latest';
+    public string $url = 'http://api.exchangeratesapi.io/v1/latest';
 
     /**
      * @inheritDoc
