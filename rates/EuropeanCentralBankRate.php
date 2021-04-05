@@ -37,6 +37,7 @@ class EuropeanCentralBankRate extends BaseRate
         // Expected Response:
         //   {"rates": {"EUR":0.8457374831, "RUB":75.9667625169}, "base": "USD", "date": "2020-09-07"}
         $params = [
+            'access_key' => $this->module->europeanCentralBankApiKey,
             'base' => $this->getAlias(self::CURRENCY_USD),
             'symbols' => implode(',', array_map(fn($code) => $this->getAlias($code), $this->currencyCodes)),
         ];

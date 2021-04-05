@@ -55,6 +55,12 @@ class BillingModule extends Module
     public int $rateMaxDeviationPercent = 15;
 
     /**
+     * @see https://exchangeratesapi.io/documentation/
+     * @var string
+     */
+    public ?string $europeanCentralBankApiKey = null;
+
+    /**
      * @return array[]
      */
     public static function cron()

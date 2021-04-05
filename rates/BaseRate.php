@@ -2,6 +2,7 @@
 
 namespace steroids\billing\rates;
 
+use steroids\billing\BillingModule;
 use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
 
@@ -38,5 +39,14 @@ abstract class BaseRate extends BaseObject
     public function getAlias($code)
     {
         return ArrayHelper::getValue($this->currencyAliases, $code, $code);
+    }
+
+    /**
+     * @return \steroids\core\base\Module|BillingModule
+     * @throws \yii\base\Exception
+     */
+    public function getModule()
+    {
+        return BillingModule::getInstance();
     }
 }
