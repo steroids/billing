@@ -7,11 +7,11 @@ use app\billing\enums\SystemAccountName;
 use app\billing\enums\UserAccountName;
 use app\user\models\User;
 use PHPUnit\Framework\TestCase;
+use steroids\billing\BillingModule;
 use steroids\billing\forms\ManualOperationForm;
-use steroids\billing\models\BillingAccount;
-use steroids\billing\models\BillingCurrency;
 use steroids\billing\models\BillingOperation;
 use steroids\billing\operations\ManualOperation;
+use steroids\billing\rates\EuropeanCentralBankRate;
 use yii\helpers\Json;
 
 class BillingTest extends TestCase
@@ -46,4 +46,19 @@ class BillingTest extends TestCase
         $this->assertEquals($comment, $operation->operation->document->comment);
     }
 
+    public function testFetchECBRates()
+    {
+        $rates = EuropeanCentralBankRate::testECB(
+            [
+                'access_key' => (BillingModule::getInstance())->europeanCentralBankApiKey,
+                'symbols' => implode(',', [
+                    'rub' => 'RUB',
+                    'eur' => 'EUR',
+                    'usd' => 'USD'
+                ]),
+            ]);
+
+        $this->assertArrayHasKey('eur', $rates);
+        $this->assertArrayHasKey('rub', $rates);
+    }
 }

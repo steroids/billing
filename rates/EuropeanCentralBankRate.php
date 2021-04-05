@@ -2,9 +2,9 @@
 
 namespace steroids\billing\rates;
 
+use steroids\billing\exceptions\CurrencyRateException;
 use steroids\billing\models\BillingCurrency;
 use steroids\billing\structure\CurrencyRates;
-use yii\base\Exception;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Json;
 
@@ -24,9 +24,18 @@ class EuropeanCentralBankRate extends BaseRate
     ];
 
     /**
+     * @var array
+     */
+    public array $currencyAliases = [
+        self::CURRENCY_RUB => 'RUB',
+        self::CURRENCY_EUR => 'EUR',
+        self::CURRENCY_USD => 'USD',
+    ];
+
+    /**
      * @var string
      */
-    public string $url = 'http://api.exchangeratesapi.io/v1/latest';
+    public const URL = 'http://api.exchangeratesapi.io/v1/latest';
 
     /**
      * @inheritDoc
@@ -34,47 +43,49 @@ class EuropeanCentralBankRate extends BaseRate
     public function fetch()
     {
         // Send request:
-        //   http://api.exchangeratesapi.io/v1/latest?base=USD&symbols=RUB,EUR
+        //   http://api.exchangeratesapi.io/v1/latest?symbols=RUB,EUR,USD
         // Expected Response:
         //   {"rates": {"EUR":0.8457374831, "RUB":75.9667625169}, "base": "USD", "date": "2020-09-07"}
         $params = [
             'access_key' => $this->module->europeanCentralBankApiKey,
-            //not support in base plan
-//            'base' => $this->getAlias(self::CURRENCY_USD),
-            'symbols' => implode(',', array_map(fn($code) => $this->getAlias($code), $this->currencyCodes)),
+            'symbols' => implode(',', $this->currencyAliases),
         ];
-        $response = file_get_contents($this->url . '?' . http_build_query($params));
+
+        return self::getParseResponse($params);
+    }
+
+    protected static function getParseResponse($params)
+    {
+        $response = file_get_contents(self::URL . '?' . http_build_query($params));
 
         // Parse response
         $data = Json::decode($response);
         $rates = ArrayHelper::getValue($data, 'rates');
         if (!$rates) {
-            throw new Exception('Wrong api.exchangeratesapi.io response: ' . $response);
+            throw new CurrencyRateException('Wrong api.exchangeratesapi.io response: ' . $response);
         }
 
         // Normalize values
         $currency = BillingCurrency::getByCode(self::CURRENCY_USD);
+
         return [
             self::CURRENCY_EUR => new CurrencyRates([
                 'rateUsd' => $currency->amountToInt(round(
-                    ArrayHelper::getValue($rates, 'EUR') / ArrayHelper::getValue($rates, 'USD'),
+                    1 / (float)ArrayHelper::getValue($rates, 'USD'),
                     2
                 ))
             ]),
             self::CURRENCY_RUB => new CurrencyRates([
                 'rateUsd' => $currency->amountToInt(round(
-                    1 / ArrayHelper::getValue($rates, 'USD'),
+                    (float)ArrayHelper::getValue($rates, 'RUB') / ArrayHelper::getValue($rates, 'USD'),
                     2
                 ))
             ])
         ];
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getAlias($code)
+    public static function testECB($customParams)
     {
-        return strtoupper(parent::getAlias($code));
+        return self::getParseResponse($customParams);
     }
 }
