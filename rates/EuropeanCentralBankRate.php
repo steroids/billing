@@ -43,9 +43,9 @@ class EuropeanCentralBankRate extends BaseRate
     public function fetch()
     {
         // Send request:
-        //   http://api.exchangeratesapi.io/v1/latest?symbols=RUB,EUR,USD
+        //   http://api.exchangeratesapi.io/v1/latest?access_key=europeanCentralBankApiKey&symbols=RUB,EUR,USD
         // Expected Response:
-        //   {"rates": {"EUR":0.8457374831, "RUB":75.9667625169}, "base": "USD", "date": "2020-09-07"}
+        //   {"success":true,"timestamp":1617689886,"base":"EUR","date":"2021-04-06","rates":{"RUB":90.181052,"EUR":1,"USD":1.18144}}
         $params = [
             'access_key' => $this->module->europeanCentralBankApiKey,
             'symbols' => implode(',', $this->currencyAliases),
