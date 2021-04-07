@@ -31,7 +31,7 @@ class TinkoffBankRate extends BaseRate
 
     public $url = 'https://www.tinkoff.ru/api/v1/currency_rates/';
 
-    private $categoryName = 'SMETransferAbove100';
+    private $categoryName = 'DebitCardsTransfers';
 
     /**
      * @inheritDoc
