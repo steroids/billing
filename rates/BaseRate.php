@@ -3,6 +3,7 @@
 namespace steroids\billing\rates;
 
 use steroids\billing\BillingModule;
+use steroids\billing\exceptions\CurrencyRateException;
 use yii\base\BaseObject;
 use yii\helpers\ArrayHelper;
 
@@ -29,6 +30,7 @@ abstract class BaseRate extends BaseObject
     /**
      * Remote fetch rates
      * @return array Key-value rates (code -> value)
+     * @throws CurrencyRateException
      */
     abstract public function fetch();
 

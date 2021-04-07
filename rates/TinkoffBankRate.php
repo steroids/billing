@@ -4,7 +4,7 @@
 namespace steroids\billing\rates;
 
 
-use Exception;
+use steroids\billing\exceptions\CurrencyRateException;
 use steroids\billing\models\BillingCurrency;
 use steroids\billing\structure\CurrencyRates;
 use yii\helpers\ArrayHelper;
@@ -45,7 +45,7 @@ class TinkoffBankRate extends BaseRate
         $ratesByCategories = ArrayHelper::getValue($data, 'payload.rates');
 
         if (!$ratesByCategories) {
-            throw new Exception('Wrong response: ' . $response);
+            throw new CurrencyRateException('Wrong response: ' . $response);
         }
 
         $ratesByCurrency = [];

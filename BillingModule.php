@@ -2,7 +2,7 @@
 
 namespace steroids\billing;
 
-use steroids\billing\exceptions\BillingException;
+use steroids\billing\exceptions\CurrencyRateException;
 use steroids\billing\operations\BaseOperation;
 use steroids\billing\operations\ManualOperation;
 use steroids\billing\models\BillingAccount;
@@ -12,6 +12,8 @@ use steroids\billing\operations\RollbackOperation;
 use steroids\billing\rates\BaseRate;
 use steroids\core\base\Enum;
 use steroids\core\base\Module;
+use Yii;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\helpers\ArrayHelper;
 
@@ -78,6 +80,7 @@ class BillingModule extends Module
      * @param array|null $names
      * @param bool $skipValidation
      * @throws InvalidConfigException
+     * @throws Exception
      */
     public static function fetchRates(array $names = null, bool $skipValidation = false)
     {
@@ -85,6 +88,8 @@ class BillingModule extends Module
         if (empty($module->rates)) {
             throw new InvalidConfigException('Rates providers is not configured! See BillingModule::rates property.');
         }
+
+        $failedRatesFetchersErrors = [];
 
         foreach ($module->rates as $name => $rate) {
             // Filter by names
@@ -94,16 +99,25 @@ class BillingModule extends Module
 
             // Lazy create rates fetcher
             if (is_string($rate) || is_array($rate)) {
-                $module->rates[$name] = $rate = \Yii::createObject($rate);
+                $module->rates[$name] = $rate = Yii::createObject($rate);
             }
 
-            // Fetch key-value rates
-            $rates = $rate->fetch();
+            try {
+                // Fetch key-value rates
+                $rates = $rate->fetch();
+            } catch (CurrencyRateException $exception) {
+                $failedRatesFetchersErrors[] = "Error in $name rate fetcher: " . $exception->getMessage();
+                continue;
+            }
 
             // Save
             /** @var BillingCurrency $currencyClass */
             $currencyClass = static::resolveClass(BillingCurrency::class);
             $currencyClass::updateRates($rates, $skipValidation);
+        }
+
+        if (count($failedRatesFetchersErrors)) {
+            throw new Exception(implode("\n", $failedRatesFetchersErrors));
         }
     }
 
@@ -152,7 +166,7 @@ class BillingModule extends Module
             throw new InvalidConfigException('Not found rate provider "' . $name . '"');
         }
         if (is_array($this->rates[$name])) {
-            $this->rates[$name] = \Yii::createObject($this->rates[$name]);
+            $this->rates[$name] = Yii::createObject($this->rates[$name]);
         }
         return $this->rates[$name];
     }
@@ -170,7 +184,7 @@ class BillingModule extends Module
      * @param string $className
      * @return string
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function getOperationName(string $className)
     {
