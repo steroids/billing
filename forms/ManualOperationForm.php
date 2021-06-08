@@ -25,7 +25,7 @@ class ManualOperationForm extends ManualOperationFormMeta
      * @throws \yii\base\Exception
      * @throws \yii\web\NotFoundHttpException
      */
-    public function execute()
+    public function execute(bool $isWithdraw = false)
     {
         if ($this->validate()) {
             // Get accounts
@@ -36,8 +36,8 @@ class ManualOperationForm extends ManualOperationFormMeta
 
             // Create operation
             $operation = new ManualOperation([
-                'fromAccount' => $fromAccount,
-                'toAccount' => $toAccount,
+                'fromAccount' => $isWithdraw ? $toAccount : $fromAccount,
+                'toAccount' => $isWithdraw ? $fromAccount : $toAccount,
                 'amount' => $toAccount->currency->amountToInt($this->amount),
                 'document' => [
                     'userId' => $this->userId,
