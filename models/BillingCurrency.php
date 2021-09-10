@@ -235,19 +235,19 @@ class BillingCurrency extends BillingCurrencyMeta
 
     /**
      * @param $value
-     * @return false|float
+     * @return int|null
      */
     public function amountToInt($value)
     {
         if ($value === null) {
             return null;
         }
-        return round(floatval($value) * pow(10, $this->precision));
+        return (int)round(floatval($value) * pow(10, $this->precision));
     }
 
     /**
-     * @param int $value
-     * @return float
+     * @param $value
+     * @return float|null
      */
     public function amountToFloat($value)
     {
