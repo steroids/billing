@@ -268,4 +268,13 @@ class BillingCurrency extends BillingCurrencyMeta
         }
         return $this->amountToFloat($amount) . ' ' . $this->label;
     }
+
+    /**
+     * @param int $amount
+     * @return int
+     */
+    public function zeroDecimalPart($amount)
+    {
+        return $this->amountToInt(floor($this->amountToFloat($amount)));
+    }
 }
