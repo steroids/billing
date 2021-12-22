@@ -116,35 +116,59 @@ class BillingCurrency extends BillingCurrencyMeta
             return $amount;
         }
 
-        return static::getByCode($toCode)->fromUsd($this->toUsd($amount, $rateDirection), $rateDirection);
+        return static::getByCode($toCode)
+            ->fromUsd(
+                $this->toUsd($amount, $rateDirection),
+                $rateDirection
+            );
     }
 
     /**
-     * @param int|null $amount
+     * @param int|null $amountInt
      * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int|null
+     * @throws BillingException
      */
-    public function toUsd(int $amount = null, $rateDirection = null)
+    public function toUsd(int $amountInt = null, $rateDirection = null)
     {
         if ($this->code === static::USD) {
-            return $amount;
+            return $amountInt;
         }
 
-        return (int)round($amount * pow(10, $this->ratePrecision) / $this->rateByDirection($rateDirection));
+        // Rate is stored in int, so converting it to float
+        $rateFloat = $this->getUsdRateFloat($this->rateByDirection($rateDirection));
+
+        $amountUsdFloat = $this->amountToFloat($amountInt) / $rateFloat;
+
+        $amountUsdInt = static::getByCode(static::USD)->amountToInt($amountUsdFloat);
+
+        return $amountUsdInt;
     }
 
     /**
-     * @param int|null $amount
+     * @param int|null $amountInt
      * @param BillingCurrencyRateDirectionEnum|null $rateDirection
      * @return int|null
+     * @throws BillingException
      */
-    public function fromUsd(int $amount = null, $rateDirection = null)
+    public function fromUsd(int $amountInt = null, $rateDirection = null)
     {
         if ($this->code === static::USD) {
-            return $amount;
+            return $amountInt;
         }
 
-        return (int)round($amount * $this->rateByDirection($rateDirection) / pow(10, $this->ratePrecision));
+        // Rate is stored in int, so converting it to float
+        $rateFloat = $this->getUsdRateFloat($this->rateByDirection($rateDirection));
+
+        $amountInContextCurrencyFloat = static::getByCode(static::USD)->amountToFloat($amountInt) * $rateFloat;
+
+        $amountInContextCurrencyInt = $this->amountToInt($amountInContextCurrencyFloat);
+
+        return $amountInContextCurrencyInt;
+    }
+
+    private function getUsdRateFloat(int $usdRateInt) {
+        return $usdRateInt / pow(10, $this->ratePrecision);
     }
 
     /**
