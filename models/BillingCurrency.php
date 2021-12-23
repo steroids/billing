@@ -167,8 +167,26 @@ class BillingCurrency extends BillingCurrencyMeta
         return $amountInContextCurrencyInt;
     }
 
-    public function getUsdRateFloat(int $usdRateInt) {
+    /**
+     * Конвертация курса обмена к USD из целочисленного в дробный с учетом точности курса обмена
+     *
+     * @param int $usdRateInt
+     * @return float
+     */
+    public function getUsdRateFloat(int $usdRateInt)
+    {
         return $usdRateInt / pow(10, $this->ratePrecision);
+    }
+
+    /**
+     * Конвертация курса обмена к USD из дробного в целочисленный с учетом точности курса обмена
+     *
+     * @param float $usdRateFloat
+     * @return float|int
+     */
+    public function getUsdRateInt(float $usdRateFloat)
+    {
+        return $usdRateFloat * pow(10, $this->ratePrecision);
     }
 
     /**
