@@ -167,7 +167,7 @@ class BillingCurrency extends BillingCurrencyMeta
         return $amountInContextCurrencyInt;
     }
 
-    private function getUsdRateFloat(int $usdRateInt) {
+    public function getUsdRateFloat(int $usdRateInt) {
         return $usdRateInt / pow(10, $this->ratePrecision);
     }
 
