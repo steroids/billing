@@ -103,6 +103,17 @@ class BillingAccount extends BillingAccountMeta
      */
     public function updateBalance(int $delta)
     {
+        if ($delta === 0) {
+            return;
+        } elseif ($delta < 0) {
+            $this->decreaseBalance($delta);
+        } else {
+            $this->increaseBalance($delta);
+        }
+    }
+
+    protected function decreaseBalance($delta)
+    {
         $condition = ['id' => $this->primaryKey];
         if (!$this->mayBeNegative() && $delta < 0) {
             $condition = [
@@ -118,6 +129,15 @@ class BillingAccount extends BillingAccountMeta
             $exception->balance = $this->balance;
             $exception->delta = $delta;
             throw $exception;
+        }
+
+        $this->balance += $delta;
+    }
+
+    protected function increaseBalance($delta)
+    {
+        if ($delta < 0) {
+            throw new Exception('Wrong delta value');
         }
 
         $this->balance += $delta;
