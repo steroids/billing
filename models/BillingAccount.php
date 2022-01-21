@@ -140,8 +140,8 @@ class BillingAccount extends BillingAccountMeta
             throw new Exception('Wrong delta value');
         }
 
-        static::updateAllCounters(['balance' => $delta]);
-        
+        static::updateAllCounters(['balance' => $delta], ['id' => $this->primaryKey]);
+
         $this->balance += $delta;
     }
 
