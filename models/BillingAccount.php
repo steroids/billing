@@ -136,10 +136,6 @@ class BillingAccount extends BillingAccountMeta
 
     protected function increaseBalance($delta)
     {
-        if ($delta < 0) {
-            throw new Exception('Wrong delta value');
-        }
-
         static::updateAllCounters(['balance' => $delta], ['id' => $this->primaryKey]);
 
         $this->balance += $delta;
