@@ -6,6 +6,7 @@ use steroids\auth\AuthModule;
 use steroids\auth\UserInterface;
 use steroids\billing\BillingModule;
 use steroids\billing\exceptions\InsufficientFundsException;
+use steroids\billing\exceptions\BillingException;
 use steroids\billing\models\meta\BillingAccountMeta;
 use steroids\core\base\Model;
 use yii\db\ActiveQuery;
@@ -112,16 +113,22 @@ class BillingAccount extends BillingAccountMeta
         }
     }
 
+    /**
+     * @param int $delta
+     * @throws BillingException
+     * @throws InsufficientFundsException
+     */
     protected function decreaseBalance($delta)
     {
-        $condition = ['id' => $this->primaryKey];
-        if (!$this->mayBeNegative() && $delta < 0) {
-            $condition = [
-                'and',
-                $condition,
-                ['>=', 'balance', abs($delta)]
-            ];
+        if ($delta > 0) {
+            throw new BillingException('Wrong delta value');
         }
+
+        $condition = array_filter([
+            'and',
+            ['id' => $this->primaryKey],
+            $this->nonNegativeCondition($delta)
+        ]);
 
         $result = static::updateAllCounters(['balance' => $delta], $condition);
         if ($result !== 1) {
@@ -134,11 +141,44 @@ class BillingAccount extends BillingAccountMeta
         $this->balance += $delta;
     }
 
+    /**
+     * @param int $delta
+     * @return array|null
+     */
+    protected function nonNegativeCondition($delta)
+    {
+        return !$this->mayBeNegative()
+            ? ['>=', 'balance', abs($delta)]
+            : null;
+    }
+
     protected function increaseBalance($delta)
     {
-        static::updateAllCounters(['balance' => $delta], ['id' => $this->primaryKey]);
+        if ($delta < 0) {
+            throw new BillingException('Wrong delta value');
+        }
+
+        $condition = array_filter([
+            'and',
+            ['id' => $this->primaryKey],
+            $this->topLimitCondition($delta)
+        ]);
+
+        $result = static::updateAllCounters(['balance' => $delta], $condition);
+        if ($result !== 1) {
+            throw new BillingException("Account has top limit for increase balance: currency {$this->currencyId}, {$this->balance} + {$delta}");
+        }
 
         $this->balance += $delta;
+    }
+
+    /**
+     * @param int $delta
+     * @return array|null
+     */
+    protected function topLimitCondition($delta)
+    {
+        return null;
     }
 
     /**
